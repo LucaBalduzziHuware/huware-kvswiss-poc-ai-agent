@@ -1,0 +1,18 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+langgraph = "*"
+langchain-google-vertexai = "*"
+google-cloud-bigquery = "*"
+google-cloud-storage = "*"
+google-cloud-discoveryengine = "*"
+pyads = "*"
+pandas = "*"
+
+[dev-packages]
+
+[requires]
+python_version = "3.12"

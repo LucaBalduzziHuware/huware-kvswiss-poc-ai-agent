@@ -10,21 +10,18 @@ L'architettura si basa sull'integrazione di dati industriali real-time provenien
 ### Stack Tecnologico
 * **Ingestione:** Python + `pyads` (già implementato nella POC precedente).
 * **Data Warehouse:** Google BigQuery (Storage dei dati di telemetria).
-* **Orchestrazione Agentica:** LangGraph (per la gestione dei cicli di stato e feedback).
-* **Framework LLM:** LangChain / Vertex AI SDK.
-* **Modello:** Gemini 1.5 Pro (Multimodale per analisi testo e immagini).
-* **Vector DB:** Vertex AI Search (per il RAG sui manuali Beckhoff).
+* **Orchestrazione Agentica:** ADK (Agent Development Kit) con architettura a nodi.
+* **Modello:** Gemini 2.5 Pro (us-central1) per analisi avanzata e tool use.
+* **Vector DB:** Vertex AI Search v2 (Layout Document Parser abilitato).
 
 ---
 
-## 2. Definizione dei Nodi del Grafo (LangGraph)
-Il sistema non è una catena lineare ma un grafo ciclico che mantiene lo stato della sessione di manutenzione.
+## 2. Definizione dei Tool e Analisi Dati
+L'agente non è limitato a query statiche ma combina tool operativi e analitici.
 
-1.  **Node: `fetch_telemetry`**: Interroga BigQuery per analizzare lo stato recente della macchina dopo un alert.
-2.  **Node: `rag_manuals`**: Ricerca nei manuali tecnici caricati su Vertex AI Search le procedure relative all'errore rilevato.
-3.  **Node: `multimodal_analysis`**: Analizza eventuali foto caricate dal tecnico per identificare usura o guasti visibili.
-4.  **Node: `decision_engine`**: Valuta se le informazioni raccolte sono sufficienti o se serve interrogare l'utente o altri dati.
-5.  **Node: `action_trigger`**: Invia notifiche, reminder o istruzioni finali al tecnico.
+1.  **Operazioni Standard**: Tool ottimizzati per telemetria (`query_production_data`), lista macchine (`list_monitored_machines`) e manutenzione (`maintenance_scheduler`).
+2.  **Analisi Dinamica**: Integrazione con BigQuery via SDK per esecuzione di SQL libero (`execute_analytic_query`) e scoperta dello schema (`explore_database_schema`).
+3.  **RAG Avanzato**: Ricerca semantica con `search_manuals` su documenti processati con Layout Parser.
 
 ---
 
