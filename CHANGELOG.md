@@ -34,9 +34,12 @@ Tutti i cambiamenti significativi a questo progetto saranno documentati in quest
     - L'aggiornamento "in-place" del parsing non era supportato correttamente dalle API; la ricreazione del Data Store ha garantito l'attivazione di `enable_table_annotation` e `enable_image_annotation`.
     - Implementato **Layout-based Chunking** (500 tokens) con mantenimento degli header antenati per preservare il contesto gerarchico dei manuali tecnici.
 - **Cleanup del Workspace:** Eliminate le cartelle di test e template ridondanti (`maintenance-agent-lc`, `dummy-agent`, `scripts/`) per mantenere un ambiente di sviluppo pulito e focalizzato sull'agente di produzione.
-- **Integrazione Ibrida BigQuery Tools:**
-    - Implementati tool analitici custom (`explore_database_schema`, `execute_analytic_query`) in `app/bq_tools.py` per bypassare i problemi di autenticazione OAuth del `BigQueryToolset` standard di ADK.
-    - Questi tool utilizzano direttamente le ADC e permettono all'agente di eseguire analisi SQL dinamiche e scoprire lo schema del database senza popup interattivi.
-    - Mantenuti i tool custom operativi per flussi ottimizzati.
-- **Aggiornamento Dipendenze:** Installato il pacchetto `db-dtypes` per supportare la conversione dei risultati BigQuery in Pandas DataFrame, necessaria per i tool analitici.
-- **Risoluzione Blocchi Auth:** Identificato e risolto il blocco di sicurezza "This app is blocked" bypassando il framework sperimentale di Pluggable Auth dell'ADK a favore di un'integrazione diretta con il BigQuery Python SDK.
+- **Integrazione Ufficiale BigQuery Toolset (Risolto):**
+    - Implementato il pattern ufficiale di Google ADK per il **refresh esplicito delle credenziali** (`credentials.refresh`) all'avvio.
+    - Ripristinato con successo il `BigQueryToolset` standard di ADK, eliminando definitivamente i popup OAuth nel Playground locale grazie all'uso delle Application Default Credentials (ADC) preventivamente validate.
+    - Integrata la configurazione `BigQueryToolConfig` per iniettare automaticamente il Project ID e la location (`US`) nei tool standard, fornendo all'agente pieno contesto sui dati.
+- **Autenticazione via Service Account (IaC):**
+    - Implementato `terraform/iam.tf` per creare un Service Account dedicato (`kv-swiss-agent-sa`) con ruoli minimi necessari per BigQuery e Vertex AI.
+    - Configurato Terraform per generare una chiave JSON e salvarla automaticamente in `maintenance-agent/sa-key.json`.
+    - Aggiornato il file `.env` per puntare a `sa-key.json` tramite `GOOGLE_APPLICATION_CREDENTIALS`.
+- **Aggiornamento Dipendenze:** Installato il pacchetto `db-dtypes` per supportare la conversione dei risultati BigQuery in Pandas DataFrame.

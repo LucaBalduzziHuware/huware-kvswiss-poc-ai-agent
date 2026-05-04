@@ -15,18 +15,44 @@
 
 import os
 import google.auth
+import google.auth.transport.requests
+from dotenv import load_dotenv
 from google.adk.agents import Agent
 from google.adk.apps import App
 from google.adk.models import Gemini
+from google.adk.tools.bigquery import BigQueryToolset, BigQueryCredentialsConfig
+from google.adk.tools.bigquery.config import BigQueryToolConfig, WriteMode
 from google.genai import types
 
 from .tools import list_monitored_machines, query_production_data, search_manuals, maintenance_scheduler
-from .bq_tools import explore_database_schema, execute_analytic_query
 
-_, project_id = google.auth.default()
+# Caricamento variabili d'ambiente dal file .env (punta a sa-key.json)
+load_dotenv()
+
+# --- CONFIGURAZIONE CREDENZIALI UFFICIALE ADK ---
+# Carichiamo le credenziali di sistema (ADC)
+credentials, project_id = google.auth.default()
+
+# Pattern Ufficiale: Forza il refresh delle credenziali per evitare il fallback OAuth interattivo
+if not credentials.valid:
+    credentials.refresh(google.auth.transport.requests.Request())
+
+# --- CONFIGURAZIONE TOOLSET ADK ---
+# Disabilitiamo il Pluggable Auth interattivo (popup) tramite variabili d'ambiente
+os.environ["ADK_FEATURE_PLUGGABLE_AUTH"] = "False"
 os.environ["GOOGLE_CLOUD_PROJECT"] = project_id
 os.environ["GOOGLE_CLOUD_LOCATION"] = "us-central1"
 os.environ["GOOGLE_GENAI_USE_VERTEXAI"] = "True"
+
+# Inizializzazione BigQuery Toolset standard con credenziali rinfrescate
+bq_toolset = BigQueryToolset(
+    credentials_config=BigQueryCredentialsConfig(credentials=credentials),
+    bigquery_tool_config=BigQueryToolConfig(
+        compute_project_id=project_id,
+        location="US",
+        write_mode=WriteMode.ALLOWED
+    )
+)
 
 root_agent = Agent(
     name="maintenance_agent",
@@ -37,21 +63,23 @@ root_agent = Agent(
     instruction=(
         "Sei l'assistente tecnico di Karlville Swiss specializzato in macchinari Beckhoff. "
         "Il tuo compito è minimizzare il downtime fornendo supporto diagnostico e operativo. "
-        "Segui queste linee guida per l'uso dei tool:\n"
-        "1. **Operazioni Standard**: Usa `list_monitored_machines`, `query_production_data` o `maintenance_scheduler` "
-        "per flussi di lavoro comuni come il controllo rapido della telemetria o la pianificazione di interventi.\n"
-        "2. **Documentazione**: Usa `search_manuals` (Vertex AI Search) per consultare i manuali tecnici PDF.\n"
-        "3. **Analisi Dati Avanzata**: Se l'utente pone domande analitiche complesse (es. medie, aggregati, analisi storiche), "
-        "usa prima `explore_database_schema` per capire la struttura dei dati e poi `execute_analytic_query` per scrivere la query SQL necessaria.\n"
-        "Se ricevi una foto, analizzala alla ricerca di danni visibili o anomalie."
+        "\n\n**CONTESTO DATI (BigQuery)**:\n"
+        f"- Progetto GCP: `{project_id}`\n"
+        "- Dataset principale: `beckhoff_data`\n"
+        "- Tabella Telemetria: `telemetry` (contiene i campi `timestamp`, `machineId`, `tag_path`, `tag_value`)\n\n"
+        "**Linee guida per l'uso dei tool**:\n"
+        "1. **Operazioni Standard**: Usa `list_monitored_machines`, `query_production_data` o `maintenance_scheduler`.\n"
+        "2. **Documentazione**: Usa `search_manuals` per i manuali tecnici.\n"
+        "3. **Analisi Dati Avanzata**: Usa i tool BigQuery standard come `execute_sql` per calcoli statistici. "
+        "Scrivi query SQL che puntano a `beckhoff_data.telemetry`.\n"
+        "Se ricevi una foto, analizzala alla ricerca di danni visibili."
     ),
     tools=[
         list_monitored_machines, 
         query_production_data, 
         search_manuals, 
         maintenance_scheduler,
-        explore_database_schema,
-        execute_analytic_query
+        bq_toolset,
     ],
 )
 

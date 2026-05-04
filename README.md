@@ -62,7 +62,7 @@ agents-cli playground
 - **query_production_data:** Interroga la tabella BigQuery `beckhoff_data.telemetry` per analizzare lo stato real-time dei sensori.
 - **search_manuals:** Esegue una ricerca semantica sui manuali tecnici caricati su Vertex AI Search (RAG v2). Utilizza il **Layout Document Parser** per interpretare immagini e tabelle tecniche.
 - **maintenance_scheduler:** Permette all'agente di pianificare interventi scrivendo nella tabella `beckhoff_data.maintenance_log`.
-- **Analisi SQL Dinamica:** Tool integrati (`explore_database_schema`, `execute_analytic_query`) che permettono all'agente di eseguire analisi dati complesse e scoprire la struttura del database in tempo reale.
+- **BigQuery Toolset Ufficiale:** Include tool standard come `execute_sql` e `get_table_info`, configurati per operare silenziosamente nel Playground tramite Service Account grazie al pattern di refresh delle credenziali.
 
 ## 5. Note sulla Configurazione RAG
 
@@ -73,4 +73,11 @@ Il sistema utilizza un Data Store (`kvswiss-manuals-ds-v2`) configurato con:
 - [uv](https://docs.astral.sh/uv/) (gestore pacchetti e runtime)
 - Google Cloud SDK configurato
 - Terraform 1.5+
-- Librerie Python chiave: `google-adk`, `google-cloud-bigquery`, `google-cloud-discoveryengine`, `pandas`, `db-dtypes`.
+- Librerie Python chiave: `google-adk`, `google-cloud-bigquery`, `google-cloud-discoveryengine`, `pandas`, `db-dtypes`, `python-dotenv`.
+
+## 6. Configurazione Sicurezza (Service Account)
+
+L'agente utilizza un **Service Account dedicato** (`kv-swiss-agent-sa`) gestito via Terraform per tutte le operazioni su BigQuery e Vertex AI.
+1. Terraform genera una chiave JSON e la salva in `maintenance-agent/sa-key.json`.
+2. Il file `.env` punta a questa chiave, permettendo al Playground di funzionare senza popup OAuth.
+3. In produzione, l'agente userà automaticamente l'identità associata all'ambiente GCP senza bisogno della chiave JSON.

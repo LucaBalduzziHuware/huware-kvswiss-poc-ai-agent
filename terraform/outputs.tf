@@ -9,3 +9,7 @@ output "gcs_bucket_name" {
 output "datastore_id" {
   value = google_discovery_engine_data_store.manuals_datastore.data_store_id
 }
+
+output "agent_service_account" {
+  value = google_service_account.agent_sa.email
+}
