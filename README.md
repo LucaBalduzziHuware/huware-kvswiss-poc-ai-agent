@@ -75,6 +75,7 @@ Per testare l'agente interattivamente nel Playground:
 - **search_manuals:** Esegue una ricerca semantica sui manuali tecnici caricati su Vertex AI Search (RAG v2). Utilizza il **Layout Document Parser** per interpretare immagini e tabelle tecniche.
 - **maintenance_scheduler:** Permette all'agente di pianificare interventi scrivendo nella tabella `beckhoff_data.maintenance_log`.
 - **BigQuery Toolset Ufficiale:** Include tool standard come `execute_sql` e `get_table_info`, configurati per operare silenziosamente nel Playground tramite Service Account grazie al pattern di refresh delle credenziali.
+- **Recupero Identità Utente (`who_am_i`):** Un tool di utilità che dimostra come recuperare l'`user_id` e lo `session_id` dell'interazione corrente, utile per logiche personalizzate o di accesso.
 
 ## 5. Note sulla Configurazione RAG
 

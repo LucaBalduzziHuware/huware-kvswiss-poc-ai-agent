@@ -22,7 +22,8 @@ L'agente non è limitato a query statiche ma combina tool operativi e analitici 
 
 1.  **Operazioni Standard**: Tool ottimizzati per telemetria (`query_production_data`), lista macchine (`list_monitored_machines`) e manutenzione (`maintenance_scheduler`).
 2.  **Analisi Dinamica**: Integrazione con il `BigQueryToolset` ufficiale di ADK per esecuzione di SQL libero (`execute_sql`) e scoperta dello schema (`get_table_info`). Questi tool operano silenziosamente tramite Service Account, senza richiedere autenticazione interattiva.
-3.  **RAG Avanzato**: Ricerca semantica con `search_manuals` su documenti processati con Layout Parser.
+3.  **Recupero Identità Utente**: Il tool `who_am_i` dimostra l'uso di `ToolContext` per accedere all'`user_id` e `session_id` dell'interazione, abilitando logiche utente-specifiche.
+4.  **RAG Avanzato**: Ricerca semantica con `search_manuals` su documenti processati con Layout Parser.
 
 ---
 

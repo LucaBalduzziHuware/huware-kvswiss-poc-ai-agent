@@ -24,6 +24,7 @@ Tutti i cambiamenti significativi a questo progetto saranno documentati in quest
         - `search_manuals`: Ricerca RAG su Vertex AI Search (aggiornato a v2).
         - `maintenance_scheduler`: Registrazione task di manutenzione.
     - Configurato `app/agent.py` con System Instruction specifica per Karlville Swiss.
+    - **Recupero Identità Utente**: Implementato il tool `who_am_i` in `app/tools.py` che utilizza `ToolContext` per recuperare l'`user_id` e `session_id` dell'utente che interagisce con l'agente.
 
 ### Changed
 - Prima strutturazione del repository secondo le linee guida ADLC.

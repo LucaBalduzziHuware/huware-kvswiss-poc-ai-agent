@@ -3,12 +3,22 @@ from typing import Optional, List
 from google.cloud import bigquery
 from google.cloud import discoveryengine_v1beta as discoveryengine
 import datetime
+from google.adk.tools import ToolContext
 
 # Configuration
 PROJECT_ID = os.environ.get("GOOGLE_CLOUD_PROJECT", "huware-kvswiss-poc")
 DATASET_ID = "beckhoff_data"
 DATASTORE_ID = "kvswiss-manuals-ds-v2"
 LOCATION = "global"
+
+def who_am_i(context: ToolContext) -> str:
+    """Restituisce l'ID dell'utente che sta interagendo con l'agente.
+    Usa questo tool per sapere chi sei o chi ha avviato la sessione.
+    """
+    user_id = context.user_id
+    session_id = context.session
+    return f"Sei l'utente: '{user_id}'\nSessione corrente: '{session_id}'"
+
 
 def list_monitored_machines() -> str:
     """Restituisce la lista di tutti i macchinari Karlville Swiss monitorati nel sistema.

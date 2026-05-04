@@ -18,11 +18,12 @@ import google.auth
 from google.adk.agents import Agent
 from google.adk.apps import App
 from google.adk.models import Gemini
+from google.adk.tools import ToolContext
 from google.adk.tools.bigquery import BigQueryToolset, BigQueryCredentialsConfig
 from google.adk.tools.bigquery.config import BigQueryToolConfig, WriteMode
 from google.genai import types
 
-from .tools import list_monitored_machines, query_production_data, search_manuals, maintenance_scheduler
+from .tools import list_monitored_machines, query_production_data, search_manuals, maintenance_scheduler, who_am_i
 
 # Ottenimento delle credenziali del Service Account
 # GOOGLE_APPLICATION_CREDENTIALS DEVE essere settata nella shell prima dell'avvio.
@@ -67,20 +68,24 @@ root_agent = Agent(
         "- Dataset principale: `beckhoff_data`\n"
         "- Tabella Telemetria: `telemetry` (contiene i campi `timestamp`, `machineId`, `tag_path`, `tag_value`)\n\n"
         "**Linee guida per l'uso dei tool**:\n"
-        "1. **Operazioni Standard**: Usa `list_monitored_machines`, `query_production_data` o `maintenance_scheduler`.\n"
-        "2. **Documentazione**: Usa `search_manuals` per i manuali tecnici.\n"
-        "3. **Analisi Dati Avanzata**: Usa i tool BigQuery standard come `execute_sql` per calcoli statistici. "
+        "1. **Informazioni Utente**: Usa `who_am_i` per recuperare l'identità dell'utente corrente.\n"
+        "2. **Operazioni Standard**: Usa `list_monitored_machines`, `query_production_data` o `maintenance_scheduler`.\n"
+        "3. **Documentazione**: Usa `search_manuals` per i manuali tecnici.\n"
+        "4. **Analisi Dati Avanzata**: Usa i tool BigQuery standard come `execute_sql` per calcoli statistici. "
         "Scrivi query SQL che puntano a `beckhoff_data.telemetry`.\n"
         "Se ricevi una foto, analizzala alla ricerca di danni visibili."
-    ),
-    tools=[
+        ),
+
+        tools=[
         list_monitored_machines, 
         query_production_data, 
         search_manuals, 
         maintenance_scheduler,
+        who_am_i,
         bq_toolset,
-    ],
-)
+        ],
+        )
+
 
 app = App(
     root_agent=root_agent,
