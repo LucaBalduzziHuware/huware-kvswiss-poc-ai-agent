@@ -51,11 +51,23 @@ uv sync
 ```
 
 ### Test Locale
-Per testare l'agente interattivamente:
-```bash
-cd maintenance-agent
-agents-cli playground
-```
+Per testare l'agente interattivamente nel Playground:
+
+1.  **Naviga nella cartella dell'agente**:
+    ```bash
+    cd maintenance-agent
+    ```
+2.  **Imposta la variabile d'ambiente per il Service Account (PERCORSO ASSOLUTO!)**:
+    ```bash
+    export GOOGLE_APPLICATION_CREDENTIALS="$(pwd)/sa-key.json"
+    ```
+    *Nota*: Questo comando deve essere eseguito *nello stesso terminale* prima di avviare il Playground.
+3.  **Avvia il Playground**:
+    ```bash
+    uv run agents-cli playground
+    ```
+    Nel log del terminale, verifica che l'agente si avvii con il Service Account (`--- AGENTE AVVIATO CON SERVICE ACCOUNT: ... ---`).
+
 
 ### Tool Implementati
 - **list_monitored_machines:** Restituisce l'elenco di tutti i Machine ID unici presenti nel database di telemetria.

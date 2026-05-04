@@ -11,6 +11,7 @@ L'architettura si basa sull'integrazione di dati industriali real-time provenien
 * **Ingestione:** Python + `pyads` (già implementato nella POC precedente).
 * **Data Warehouse:** Google BigQuery (Storage dei dati di telemetria).
 * **Orchestrazione Agentica:** ADK (Agent Development Kit) con architettura a nodi.
+* **Autenticazione:** Service Account dedicato (gestito via Terraform) per tutte le interazioni con GCP, con configurazione del Service Account Key locale per lo sviluppo.
 * **Modello:** Gemini 2.5 Pro (us-central1) per analisi avanzata e tool use.
 * **Vector DB:** Vertex AI Search v2 (Layout Document Parser abilitato).
 
@@ -20,7 +21,7 @@ L'architettura si basa sull'integrazione di dati industriali real-time provenien
 L'agente non è limitato a query statiche ma combina tool operativi e analitici ufficiali.
 
 1.  **Operazioni Standard**: Tool ottimizzati per telemetria (`query_production_data`), lista macchine (`list_monitored_machines`) e manutenzione (`maintenance_scheduler`).
-2.  **Analisi Dinamica**: Integrazione con il `BigQueryToolset` ufficiale di ADK per esecuzione di SQL libero (`execute_sql`) e scoperta dello schema (`get_table_info`). Grazie al pattern di refresh delle credenziali, questi tool operano silenziosamente tramite Service Account nel Playground.
+2.  **Analisi Dinamica**: Integrazione con il `BigQueryToolset` ufficiale di ADK per esecuzione di SQL libero (`execute_sql`) e scoperta dello schema (`get_table_info`). Questi tool operano silenziosamente tramite Service Account, senza richiedere autenticazione interattiva.
 3.  **RAG Avanzato**: Ricerca semantica con `search_manuals` su documenti processati con Layout Parser.
 
 ---

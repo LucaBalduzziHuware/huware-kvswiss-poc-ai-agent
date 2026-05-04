@@ -15,8 +15,6 @@
 
 import os
 import google.auth
-import google.auth.transport.requests
-from dotenv import load_dotenv
 from google.adk.agents import Agent
 from google.adk.apps import App
 from google.adk.models import Gemini
@@ -26,16 +24,15 @@ from google.genai import types
 
 from .tools import list_monitored_machines, query_production_data, search_manuals, maintenance_scheduler
 
-# Caricamento variabili d'ambiente dal file .env (punta a sa-key.json)
-load_dotenv()
-
-# --- CONFIGURAZIONE CREDENZIALI UFFICIALE ADK ---
-# Carichiamo le credenziali di sistema (ADC)
+# Ottenimento delle credenziali del Service Account
+# GOOGLE_APPLICATION_CREDENTIALS DEVE essere settata nella shell prima dell'avvio.
 credentials, project_id = google.auth.default()
 
-# Pattern Ufficiale: Forza il refresh delle credenziali per evitare il fallback OAuth interattivo
-if not credentials.valid:
-    credentials.refresh(google.auth.transport.requests.Request())
+# Debug dell'identità nel terminale all'avvio
+if hasattr(credentials, "service_account_email"):
+    print(f"--- AGENTE AVVIATO CON SERVICE ACCOUNT: {credentials.service_account_email} ---")
+else:
+    print(f"--- ATTENZIONE: AGENTE AVVIATO CON CREDENZIALI PERSONALI --- ")
 
 # --- CONFIGURAZIONE TOOLSET ADK ---
 # Disabilitiamo il Pluggable Auth interattivo (popup) tramite variabili d'ambiente
@@ -44,7 +41,9 @@ os.environ["GOOGLE_CLOUD_PROJECT"] = project_id
 os.environ["GOOGLE_CLOUD_LOCATION"] = "us-central1"
 os.environ["GOOGLE_GENAI_USE_VERTEXAI"] = "True"
 
-# Inizializzazione BigQuery Toolset standard con credenziali rinfrescate
+
+# Inizializzazione BigQuery Toolset standard con credenziali rinfrescate.
+# Non specifichiamo client_id, client_secret o scopes qui, in modo che usi solo i ruoli IAM.
 bq_toolset = BigQueryToolset(
     credentials_config=BigQueryCredentialsConfig(credentials=credentials),
     bigquery_tool_config=BigQueryToolConfig(

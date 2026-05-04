@@ -38,6 +38,7 @@ Tutti i cambiamenti significativi a questo progetto saranno documentati in quest
     - Implementato il pattern ufficiale di Google ADK per il **refresh esplicito delle credenziali** (`credentials.refresh`) all'avvio.
     - Ripristinato con successo il `BigQueryToolset` standard di ADK, eliminando definitivamente i popup OAuth nel Playground locale grazie all'uso delle Application Default Credentials (ADC) preventivamente validate.
     - Integrata la configurazione `BigQueryToolConfig` per iniettare automaticamente il Project ID e la location (`US`) nei tool standard, fornendo all'agente pieno contesto sui dati.
+    - **Risoluzione errore 'invalid_scope'**: Rimosso il `credentials.refresh()` esplicito per i Service Account, risolvendo l'errore `invalid_scope` e consentendo l'autenticazione server-to-server pulita.
 - **Autenticazione via Service Account (IaC):**
     - Implementato `terraform/iam.tf` per creare un Service Account dedicato (`kv-swiss-agent-sa`) con ruoli minimi necessari per BigQuery e Vertex AI.
     - Configurato Terraform per generare una chiave JSON e salvarla automaticamente in `maintenance-agent/sa-key.json`.
