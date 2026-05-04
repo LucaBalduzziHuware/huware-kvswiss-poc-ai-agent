@@ -1,0 +1,2 @@
+{"input": "Ciao, come posso risolvere l'errore ADS 1808 sul PLC CX5100?", "expected": "Verifica i manuali per l'errore 1808."}
+{"input": "Quali sono i dati di telemetria recenti per la macchina KS-DSUP-400?", "expected": "Visualizza i log di BigQuery."}
