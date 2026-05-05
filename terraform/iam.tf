@@ -17,6 +17,19 @@ resource "google_project_iam_member" "bigquery_job_user" {
   member  = "serviceAccount:${google_service_account.agent_sa.email}"
 }
 
+resource "google_project_iam_member" "bigquery_editor" {
+  project = var.project_id
+  role    = "roles/bigquery.dataEditor"
+  member  = "serviceAccount:${google_service_account.agent_sa.email}"
+}
+
+# Permesso per il logging (necessario per test_agent_feedback)
+resource "google_project_iam_member" "logging_writer" {
+  project = var.project_id
+  role    = "roles/logging.logWriter"
+  member  = "serviceAccount:${google_service_account.agent_sa.email}"
+}
+
 # Permessi sul RAG (Vertex AI Search)
 resource "google_project_iam_member" "discoveryengine_viewer" {
   project = var.project_id

@@ -23,7 +23,7 @@ L'agente non è limitato a query statiche ma combina tool operativi e analitici 
 1.  **Operazioni Standard**: Tool ottimizzati per telemetria (`query_production_data`), lista macchine (`list_monitored_machines`) e manutenzione (`maintenance_scheduler`).
 2.  **Analisi Dinamica**: Integrazione con il `BigQueryToolset` ufficiale di ADK per esecuzione di SQL libero (`execute_sql`) e scoperta dello schema (`get_table_info`). Questi tool operano silenziosamente tramite Service Account, senza richiedere autenticazione interattiva.
 3.  **Recupero Identità Utente**: Il tool `who_am_i` dimostra l'uso di `ToolContext` per accedere all'`user_id` e `session_id` dell'interazione, abilitando logiche utente-specifiche.
-4.  **RAG Avanzato**: Ricerca semantica con `search_manuals` su documenti processati con Layout Parser.
+4.  **RAG Avanzato**: Ricerca documentale tramite `VertexAiSearchTool` (tool ufficiale ADK) su documenti processati con Layout Parser.
 
 ---
 
@@ -57,15 +57,16 @@ Usa i seguenti prompt per generare il codice specifico:
 
 ---
 
-## 5. Passaggi Critici da Implementare
-* **Grounding:** Forzare il modello a citare sempre la pagina del manuale (es. "Secondo il manuale a pag. 12...").
-* **Analisi Immagini:** Configurare il prompt di sistema per accettare `Part` di tipo `Image` e confrontarle con diagrammi tecnici.
-* **Gestione Errori ADS:** Mappare i codici esadecimali Beckhoff (es. 1808) in descrizioni testuali leggibili prima di inviarli all'LLM.
+## 5. Stato dell'Implementazione
+* **Grounding:** [IMPLEMENTATO] Il modello cita sempre la fonte e la pagina del manuale.
+* **Analisi Immagini:** [IMPLEMENTATO] Istruzioni di sistema configurate per l'analisi di foto di componenti.
+* **Gestione Errori ADS:** [IMPLEMENTATO] Utility `ads_errors.py` mappa i codici esadecimali in descrizioni leggibili.
+* **Orchestrazione:** [IMPLEMENTATO] Pattern Supervisor/Expert con ADK.
 
 ---
 
 ## 6. Esempio di Prompt di Sistema (System Instruction)
-`Sei l'assistente tecnico di Karlville Swiss. Il tuo compito è minimizzare il downtime dei macchinari Beckhoff. Analizza i dati ADS in arrivo e confrontali con la documentazione ufficiale. Se rilevi un'anomalia, guida il tecnico passo-passo. Se ricevi una foto, analizza componenti elettrici o meccanici alla ricerca di bruciature o disallineamenti.`
+`Sei l'assistente tecnico di Karlville Swiss. Il tuo compito è minimizzare il downtime dei macchinari Beckhoff. Analizza i dati ADS in arrivo e confrontali con la documentazione ufficiale. Se rilevi un'anomalia, guida il tecnico passo-passo. Se ricevi una foto, analizza componenti elettrici o meccanici alla ricerca di bruciature o disallineamenti. Cita sempre la fonte e la pagina dei manuali.`
 
 ---
 
@@ -75,58 +76,32 @@ Ad ogni interazione, generazione di codice o modifica dell'architettura, Gemini 
 
 ### CHANGELOG.md
 * **Contenuto:** Registro cronologico di tutte le modifiche.
-* **Dettagli richiesti:** Data, descrizione del cambiamento, motivazione tecnica e, soprattutto, **cambi di strategia** (es. "Passaggio da ricerca vettoriale semplice a RAG ibrido per migliorare la precisione sui codici errore ADS").
+* **Dettagli richiesti:** Data, descrizione del cambiamento, motivazione tecnica e, soprattutto, **cambi di strategia**.
 
 ### README.md
 * **Contenuto:** Documentazione tecnica esaustiva del progetto.
-* **Struttura:** - Descrizione del progetto Karlville Swiss.
-    - Struttura delle cartelle e dei file.
-    - Dettaglio dei metodi e delle classi (es. nodi del grafo, tool di BigQuery).
-    - Guida all'installazione (setup dei permessi GCP, variabili d'ambiente).
-    - Esempi di utilizzo.
 
 ### Diagrammi e Visualizzazione
-* Per ogni spiegazione architettonica, flusso logico di LangGraph o schema di database, Gemini deve generare dei diagrammi utilizzando la sintassi **Mermaid.js**. 
-* I diagrammi devono essere inclusi direttamente nel README.md per una visualizzazione immediata.
+* Per ogni spiegazione architettonica, flusso logico o schema di database, Gemini deve generare dei diagrammi utilizzando la sintassi **Mermaid.js**. 
 
 ---
 
-## 8. Integrazione con `google-agents-cli`
+## 8. Integrazione con `google-agents-cli` (ADLC)
 
 Il progetto deve essere gestito seguendo il framework ufficiale Google per l'Agent Development Lifecycle (ADLC).
 
-### Inizializzazione e Struttura
-1. **Scaffolding:** Utilizzare `uvx google-agents-cli setup` per configurare l'ambiente.
-2. **Creazione Progetto:** Inizializzare l'agente con `agents-cli create maintenance-agent --template=langgraph`.
-3. **Organizzazione Cartelle:**
-    - `/tools`: Implementazione dei connettori BigQuery e Vertex AI Search.
-    - `/evals`: Set di test (input: "Codice errore 0x6", output atteso: "Verifica connessione ADS").
-    - `/prompts`: Gestione delle System Instructions multimodali.
-
 ### Workflow di Sviluppo (Gemini CLI)
-- **Sperimentazione:** Utilizzare `agents-cli playground` per validare le risposte dell'agente prima del deploy.
-- **Valutazione:** Eseguire `agents-cli eval` dopo ogni modifica sostanziale alla logica di LangGraph o ai prompt di sistema.
+- **Sperimentazione:** Utilizzare `agents-cli playground` per validare le risposte dell'agente.
+- **Valutazione:** Eseguire `agents-cli eval run` dopo ogni modifica sostanziale.
 - **Deployment:** Utilizzare `agents-cli deploy` per portare l'agente su Vertex AI Agent Engine.
-
-### Vincoli di Risposta per Gemini
-Quando viene richiesto di implementare una nuova funzionalità, Gemini deve:
-1. Fornire il codice Python compatibile con la struttura generata da `agents-cli`.
-2. Definire i test case corrispondenti nella cartella `/evals`.
-3. Documentare il comando CLI necessario per testare la specifica funzione.
 
 ---
 
 ## 9. Gestione Ambiente e Dipendenze
 
-Per garantire la riproducibilità e la coerenza dell'ambiente di sviluppo tra la POC e la produzione, Gemini deve attenersi ai seguenti standard:
-
-### Python & Pipenv
-* **Linguaggio:** Tutto il codice backend, i nodi di LangGraph e i tool devono essere sviluppati esclusivamente in **Python 3.10+**.
-* **Gestione Pacchetti:** Il gestore ufficiale delle dipendenze per questo progetto è **Pipenv**. 
+### Python & uv
+* **Linguaggio:** Python 3.10+
+* **Gestione Pacchetti:** Il gestore ufficiale delle dipendenze per questo progetto è **uv**. 
 * **Workflow:**
-    - Ogni volta che viene aggiunta una nuova libreria (es. `pyads`, `langchain-google-vertexai`, `pandas`), Gemini deve indicare il comando `pipenv install <package>`.
-    - Gemini deve assicurarsi che il file `Pipfile` e `Pipfile.lock` siano coerenti con la logica implementata.
-
-### requirements.txt (Export Automatico)
-* Sebbene si utilizzi Pipenv, per compatibilità con alcuni servizi di Google Cloud (come Cloud Functions o build specifiche), Gemini deve **sempre sincronizzare** le dipendenze in un file `requirements.txt`.
-* **Vincolo:** Ogni volta che vengono apportate modifiche alle dipendenze o al codice che le richiede, Gemini deve generare o aggiornare il file `requirements.txt` tramite il comando `pipenv lock -r > requirements.txt`.
+    - `uv sync` per installare le dipendenze.
+    - `uv run agents-cli playground` per avviare l'agente.

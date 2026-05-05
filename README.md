@@ -4,19 +4,20 @@ Questo progetto implementa un assistente intelligente basato su agenti per la ma
 
 ## 1. Architettura del Sistema
 
-L'agente utilizza **LangGraph** per orchestrare il flusso di lavoro, integrando dati in tempo reale (ADS/BigQuery) e documentazione tecnica (RAG su Vertex AI Search).
+L'agente utilizza l'**Agent Development Kit (ADK)** di Google per orchestrare un sistema a nodi (Supervisor/Expert):
+- **maintenance_agent (Root)**: Agisce come supervisore e router delle richieste.
+- **docs_agent (Expert)**: Specializzato in RAG documentale e analisi immagini tecniche.
+- **data_agent (Expert)**: Specializzato in telemetria BigQuery e operazioni di sistema.
 
 ```mermaid
 graph TD
-    PLC[PLC Beckhoff] -- ADS --> Ingestor[Python Ingestor]
-    Ingestor -- Stream --> BQ[(BigQuery Telemetry)]
-    Technician[Tecnico Manutentore] -- Domanda/Foto --> Agent{AI Maintenance Agent}
-    Agent -- Query --> BQ
-    Agent -- Search --> RAG[Vertex AI Search: Manuals]
-    Agent -- Multimodal --> Gemini[Gemini 1.5 Pro]
-    RAG -- Context --> Agent
-    Gemini -- Reasoning --> Agent
-    Agent -- Istruzioni/Alert --> Technician
+    User((Utente)) --> Root[Root Agent]
+    Root -->|Delega Documenti/Immagini| Docs[Docs Agent]
+    Root -->|Delega Telemetria/Sistema| Data[Data Agent]
+    
+    Docs -->|Vertex AI Search| Manuals[(Manuali PDF)]
+    Data -->|BigQuery| Telemetry[(BigQuery Telemetry)]
+    Data -->|BigQuery| MaintLog[(Maintenance Log)]
 ```
 
 ## 2. Struttura del Progetto
@@ -24,6 +25,9 @@ graph TD
 ```text
 .
 ├── maintenance-agent/  # Codice sorgente dell'AI Agent (ADK)
+│   ├── app/            # Logica dell'agente e dei tool
+│   ├── evals/          # Set di valutazione
+│   └── tests/          # Test unitari e integrazione
 ├── terraform/          # Infrastruttura Google Cloud (IAC)
 ├── docs/               # Manuali tecnici originali (PDF)
 ├── GEMINI.md           # Blueprint e specifiche tecniche
@@ -66,31 +70,23 @@ Per testare l'agente interattivamente nel Playground:
     ```bash
     uv run agents-cli playground
     ```
-    Nel log del terminale, verifica che l'agente si avvii con il Service Account (`--- AGENTE AVVIATO CON SERVICE ACCOUNT: ... ---`).
-
 
 ### Tool Implementati
-- **list_monitored_machines:** Restituisce l'elenco di tutti i Machine ID unici presenti nel database di telemetria.
-- **query_production_data:** Interroga la tabella BigQuery `beckhoff_data.telemetry` per analizzare lo stato real-time dei sensori.
-- **search_manuals:** Esegue una ricerca semantica sui manuali tecnici caricati su Vertex AI Search (RAG v2). Utilizza il **Layout Document Parser** per interpretare immagini e tabelle tecniche.
-- **maintenance_scheduler:** Permette all'agente di pianificare interventi scrivendo nella tabella `beckhoff_data.maintenance_log`.
-- **BigQuery Toolset Ufficiale:** Include tool standard come `execute_sql` e `get_table_info`, configurati per operare silenziosamente nel Playground tramite Service Account grazie al pattern di refresh delle credenziali.
-- **Recupero Identità Utente (`who_am_i`):** Un tool di utilità che dimostra come recuperare l'`user_id` e lo `session_id` dell'interazione corrente, utile per logiche personalizzate o di accesso.
+- **list_monitored_machines:** Restituisce l'elenco di tutti i Machine ID monitorati.
+- **query_production_data:** Analizza la telemetria real-time con **mappatura automatica degli errori ADS** (es. 1808 -> Symbol not found).
+- **Vertex AI Search Tool:** Ricerca documentale avanzata sui manuali PDF con citazione di fonte e pagina.
+- **maintenance_scheduler:** Pianifica interventi di manutenzione su BigQuery.
+- **get_system_user_info:** Recupera l'identità tecnica dell'utente (`user_id`, `session_id`).
+- **BigQuery Toolset:** Supporto per query SQL dirette e analisi dello schema dati.
 
-## 5. Note sulla Configurazione RAG
+## 5. Funzionalità Avanzate
+- **Multimodalità**: L'agente accetta immagini (foto di componenti) per confronti tecnici.
+- **Grounding**: Risposte verificate con citazioni obbligatorie ai documenti sorgente.
+- **ADS Mapping**: Traduzione automatica dei codici esadecimali Beckhoff in descrizioni leggibili.
 
-Il sistema utilizza un Data Store (`kvswiss-manuals-ds-v2`) configurato con:
-- **Advanced Layout Parsing:** Abilitato per estrarre informazioni da schemi tecnici e tabelle.
-- **Layout-based Chunking:** Le porzioni di testo indicizzate rispettano la struttura dei paragrafi e includono i titoli dei capitoli per mantenere il contesto.
-- Python 3.11+
-- [uv](https://docs.astral.sh/uv/) (gestore pacchetti e runtime)
-- Google Cloud SDK configurato
-- Terraform 1.5+
-- Librerie Python chiave: `google-adk`, `google-cloud-bigquery`, `google-cloud-discoveryengine`, `pandas`, `db-dtypes`, `python-dotenv`.
+## 6. Configurazione Sicurezza
 
-## 6. Configurazione Sicurezza (Service Account)
-
-L'agente utilizza un **Service Account dedicato** (`kv-swiss-agent-sa`) gestito via Terraform per tutte le operazioni su BigQuery e Vertex AI.
-1. Terraform genera una chiave JSON e la salva in `maintenance-agent/sa-key.json`.
-2. Il file `.env` punta a questa chiave, permettendo al Playground di funzionare senza popup OAuth.
-3. In produzione, l'agente userà automaticamente l'identità associata all'ambiente GCP senza bisogno della chiave JSON.
+L'agente utilizza un **Service Account dedicato** (`kv-swiss-agent-sa`) gestito via Terraform.
+1. Terraform genera una chiave JSON in `maintenance-agent/sa-key.json`.
+2. Il file `.env` punta a questa chiave per il supporto locale.
+3. In produzione, viene utilizzata l'identità dell'ambiente GCP.

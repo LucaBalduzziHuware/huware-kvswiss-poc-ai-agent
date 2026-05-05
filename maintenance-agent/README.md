@@ -1,82 +1,76 @@
-# maintenance-agent
+# POC: AI Maintenance Agent per Karlville Swiss
 
-Simple ReAct agent
-Agent generated with `agents-cli` version `0.1.2`
+Questo progetto implementa un assistente intelligente per la manutenzione dei macchinari Karlville Swiss basati su tecnologia Beckhoff. L'agente integra dati di telemetria da BigQuery e documentazione tecnica tramite Vertex AI Search.
 
-## Project Structure
+## Architettura
+
+L'agente è strutturato con un modello a nodi (Supervisor/Expert):
+- **maintenance_agent (Root)**: Coordina le richieste e delega agli esperti.
+- **docs_agent**: Specializzato nella ricerca documentale sui manuali PDF (RAG). Supporta l'analisi di immagini.
+- **data_agent**: Specializzato nell'interrogazione della telemetria real-time e nella gestione del sistema.
+
+```mermaid
+graph TD
+    User((Utente)) --> Root[Root Agent]
+    Root -->|Delega Documenti/Immagini| Docs[Docs Agent]
+    Root -->|Delega Telemetria/Sistema| Data[Data Agent]
+    
+    Docs -->|Vertex AI Search| Manuals[(Manuali PDF)]
+    Data -->|BigQuery| Telemetry[(BigQuery Telemetry)]
+    Data -->|BigQuery| MaintLog[(Maintenance Log)]
+```
+
+## Struttura del Progetto
 
 ```
 maintenance-agent/
-├── app/         # Core agent code
-│   ├── agent.py               # Main agent logic
-│   ├── agent_runtime_app.py    # Agent Runtime application logic
-│   └── app_utils/             # App utilities and helpers
-├── tests/                     # Unit, integration, and load tests
-├── GEMINI.md                  # AI-assisted development guide
-└── pyproject.toml             # Project dependencies
+├── app/
+│   ├── agent.py               # Definizione degli agenti e del grafo
+│   ├── tools.py               # Implementazione dei tool custom (BQ, Identity)
+│   ├── app_utils/
+│   │   ├── ads_errors.py      # Utility per mappatura errori Beckhoff ADS
+│   │   ├── telemetry.py       # Setup telemetria (OpenTelemetry)
+│   │   └── typing.py          # Definizione tipi di feedback
+├── evals/                     # Dataset di valutazione (.jsonl)
+├── tests/                     # Test unitari e di integrazione
+│   └── eval/                  # Configurazione e set di valutazione ADK
+├── GEMINI.md                  # Istruzioni specifiche per lo sviluppo assistito
+└── sa-key.json                # Chiave del Service Account per lo sviluppo locale (GIT IGNORED)
 ```
 
-> 💡 **Tip:** Use [Gemini CLI](https://github.com/google-gemini/gemini-cli) for AI-assisted development - project context is pre-configured in `GEMINI.md`.
+## Funzionalità Implementate
 
-## Requirements
+1. **RAG Avanzato**: Ricerca semantica sui manuali con citazione automatica della fonte e della pagina.
+2. **Analisi Telemetria**: Interrogazione degli ultimi 100 log di telemetria per macchina con mappatura automatica dei codici errore ADS (es. 1808 -> Symbol not found).
+3. **Pianificazione Interventi**: Registrazione di task di manutenzione direttamente su BigQuery.
+4. **Identità di Sistema**: Recupero dinamico di `user_id` e `session_id` tramite `ToolContext`.
+5. **Supporto Multimodale**: Capacità di analizzare foto di componenti e confrontarle con la documentazione (istruzioni di sistema configurate).
 
-Before you begin, ensure you have:
-- **uv**: Python package manager (used for all dependency management in this project) - [Install](https://docs.astral.sh/uv/getting-started/installation/) ([add packages](https://docs.astral.sh/uv/concepts/dependencies/) with `uv add <package>`)
-- **agents-cli**: Agents CLI - Install with `uv tool install google-agents-cli`
-- **Google Cloud SDK**: For GCP services - [Install](https://cloud.google.com/sdk/docs/install)
+## Comandi Rapidi
 
-
-## Quick Start
-
-Install required packages:
-
+### Installazione
 ```bash
 agents-cli install
 ```
 
-Test the agent with a local web server:
-
+### Esecuzione Locale (Playground)
 ```bash
 agents-cli playground
 ```
 
-You can also use features from the [ADK](https://adk.dev/) CLI with `uv run adk`.
-
-## Commands
-
-| Command              | Description                                                                                 |
-| -------------------- | ------------------------------------------------------------------------------------------- |
-| `agents-cli install` | Install dependencies using uv                                                         |
-| `agents-cli playground` | Launch local development environment                                                  |
-| `agents-cli lint`    | Run code quality checks                                                               |
-| `uv run pytest tests/unit tests/integration` | Run unit and integration tests                                                        |
-| `agents-cli deploy`  | Deploy agent to Agent Runtime                                                                |
-| `agents-cli publish gemini-enterprise` | Register deployed agent to Gemini Enterprise                    |
-
-## 🛠️ Project Management
-
-| Command | What It Does |
-|---------|--------------|
-| `agents-cli scaffold enhance` | Add CI/CD pipelines and Terraform infrastructure |
-| `agents-cli infra cicd` | One-command setup of entire CI/CD pipeline + infrastructure |
-| `agents-cli scaffold upgrade` | Auto-upgrade to latest version while preserving customizations |
-
----
-
-## Development
-
-Edit your agent logic in `app/agent.py` and test with `agents-cli playground` - it auto-reloads on save.
-
-## Deployment
-
+### Valutazione (Evaluation)
 ```bash
-gcloud config set project <your-project-id>
-agents-cli deploy
+agents-cli eval run
 ```
 
-To add CI/CD and Terraform, run `agents-cli scaffold enhance`.
-To set up your production infrastructure, run `agents-cli infra cicd`.
+### Test
+```bash
+uv run pytest tests/unit tests/integration
+```
 
-## Observability
+## Configurazione Ambiente
 
-Built-in telemetry exports to Cloud Trace, BigQuery, and Cloud Logging.
+Assicurarsi di avere le seguenti variabili d'ambiente nel file `.env`:
+- `GOOGLE_CLOUD_PROJECT`: ID del progetto GCP.
+- `GOOGLE_CLOUD_LOCATION`: us-central1.
+- `GOOGLE_APPLICATION_CREDENTIALS`: sa-key.json.

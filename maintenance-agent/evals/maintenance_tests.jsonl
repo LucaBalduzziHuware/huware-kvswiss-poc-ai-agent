@@ -1,2 +1,3 @@
-{"input": "Ciao, come posso risolvere l'errore ADS 1808 sul PLC CX5100?", "expected": "Verifica i manuali per l'errore 1808."}
-{"input": "Quali sono i dati di telemetria recenti per la macchina KS-DSUP-400?", "expected": "Visualizza i log di BigQuery."}
+{"input": "Ciao, come posso risolvere l'errore ADS 1808 sul PLC CX5100?", "expected": "L'errore 1808 indica che il simbolo non è stato trovato. Verifica i manuali per la risoluzione."}
+{"input": "Quali sono i dati di telemetria recenti per la macchina KS-DSUP-400?", "expected": "Visualizza i log di BigQuery per la macchina KS-DSUP-400."}
+{"input": "Che cosa significa l'errore ADS 1800?", "expected": "L'errore 1800 significa 'Simbolo non trovato'."}

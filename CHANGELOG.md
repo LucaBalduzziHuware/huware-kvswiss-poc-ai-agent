@@ -2,7 +2,22 @@
 
 Tutti i cambiamenti significativi a questo progetto saranno documentati in questo file.
 
-## [Unreleased] - 2026-04-30
+## [Unreleased] - 2026-05-05
+
+### Added
+- **ADS Error Mapping**: Implementata una utility (`ads_errors.py`) che mappa i codici errore Beckhoff ADS comuni in descrizioni testuali leggibili.
+- **Multimodal Support**: Aggiornate le istruzioni di sistema per supportare l'analisi di immagini e il confronto con i diagrammi dei manuali tecnici.
+- **Improved Grounding**: Rafforzate le istruzioni per il `docs_agent` per garantire citazioni esplicite (documento e pagina) e risposte basate esclusivamente sui documenti recuperati.
+- **New Evaluation Cases**: Creato un set di valutazione specifico per Karlville Swiss (`basic.evalset.json`) che include test per errori ADS, lista macchine e saluti.
+
+### Fixed
+- **Evaluation Config**: Risolto l'errore `404 NOT_FOUND` durante l'eval sostituendo il judge model `gemini-flash-latest` (non disponibile) con `gemini-2.5-pro` in `tests/eval/eval_config.json`.
+- **Tool Formatting**: Migliorata la formattazione degli output dei tool `list_monitored_machines` e `query_production_data` per una migliore leggibilità.
+
+### Verified
+- Eseguita con successo la valutazione completa tramite `agents-cli eval run` (3/3 test superati).
+
+## [0.1.0] - 2026-04-30
 
 ### Added
 - Inizializzazione del repository Git.
@@ -21,10 +36,10 @@ Tutti i cambiamenti significativi a questo progetto saranno documentati in quest
     - Implementati tool personalizzati in `app/tools.py`:
         - `list_monitored_machines`: Recupera la lista dei Machine ID unici da BigQuery.
         - `query_production_data`: Integrazione con BigQuery Telemetry.
-        - `search_manuals`: Ricerca RAG su Vertex AI Search (aggiornato a v2).
         - `maintenance_scheduler`: Registrazione task di manutenzione.
+        - `who_am_i`: Implementato il tool `who_am_i` che utilizza `ToolContext` per recuperare l'`user_id` e `session_id` dell'utente che interagisce con l'agente.
     - Configurato `app/agent.py` con System Instruction specifica per Karlville Swiss.
-    - **Recupero Identità Utente**: Implementato il tool `who_am_i` in `app/tools.py` che utilizza `ToolContext` per recuperare l'`user_id` e `session_id` dell'utente che interagisce con l'agente.
+    - **Integrazione `VertexAiSearchTool`**: Sostituito il tool `search_manuals` custom con il tool ufficiale `VertexAiSearchTool` dell'ADK per la ricerca documentale su Vertex AI Search.
 
 ### Changed
 - Prima strutturazione del repository secondo le linee guida ADLC.
