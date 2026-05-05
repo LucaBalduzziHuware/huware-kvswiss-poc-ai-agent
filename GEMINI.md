@@ -62,6 +62,7 @@ Usa i seguenti prompt per generare il codice specifico:
 * **Analisi Immagini:** [IMPLEMENTATO] Istruzioni di sistema configurate per l'analisi di foto di componenti.
 * **Gestione Errori ADS:** [IMPLEMENTATO] Utility `ads_errors.py` mappa i codici esadecimali in descrizioni leggibili.
 * **Orchestrazione:** [IMPLEMENTATO] Pattern Supervisor/Expert con ADK.
+* **Refresh Automatico:** [IMPLEMENTATO] Pipeline Eventarc + Cloud Function per refresh incrementale del Datastore su upload GCS.
 
 ---
 

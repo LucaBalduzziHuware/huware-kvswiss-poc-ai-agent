@@ -93,3 +93,79 @@ resource "google_discovery_engine_data_store" "manuals_datastore" {
 
   depends_on = [google_project_service.discoveryengine]
 }
+
+# ==========================================
+# Cloud Function per Sincronizzazione Automatica
+# ==========================================
+
+# Bucket per il codice sorgente delle Cloud Functions
+resource "google_storage_bucket" "cf_source_bucket" {
+  name          = "${var.project_id}-cf-source"
+  location      = var.region
+  force_destroy = true
+  uniform_bucket_level_access = true
+}
+
+# Zip del codice sorgente
+data "archive_file" "sync_function_source" {
+  type        = "zip"
+  source_dir  = "${path.module}/cloud_functions/sync_datastore"
+  output_path = "${path.module}/sync_datastore.zip"
+}
+
+# Upload dello zip su GCS
+resource "google_storage_bucket_object" "sync_function_zip" {
+  name   = "sync_datastore-${data.archive_file.sync_function_source.output_md5}.zip"
+  bucket = google_storage_bucket.cf_source_bucket.name
+  source = data.archive_file.sync_function_source.output_path
+}
+
+# La Cloud Function (2nd Gen)
+resource "google_cloudfunctions2_function" "vertex_sync_function" {
+  name        = "vertex-sync-on-upload"
+  location    = var.region
+  project     = var.project_id
+  description = "Triggera l'importazione incrementale in Vertex AI Search al caricamento di un PDF"
+
+  build_config {
+    runtime     = "python311"
+    entry_point = "trigger_vertex_sync"
+    source {
+      storage_source {
+        bucket = google_storage_bucket.cf_source_bucket.name
+        object = google_storage_bucket_object.sync_function_zip.name
+      }
+    }
+  }
+
+  service_config {
+    max_instance_count = 5
+    available_memory   = "256M"
+    timeout_seconds    = 60
+    service_account_email = google_service_account.sync_sa.email
+    
+    environment_variables = {
+      GOOGLE_CLOUD_PROJECT = var.project_id
+      LOCATION             = "global"
+      DATA_STORE_ID        = google_discovery_engine_data_store.manuals_datastore.data_store_id
+    }
+  }
+
+  event_trigger {
+    event_type            = "google.cloud.storage.object.v1.finalized"
+    trigger_region        = var.region # Deve coincidere con la regione del bucket
+    service_account_email = google_service_account.sync_sa.email
+    event_filters {
+      attribute = "bucket"
+      value     = google_storage_bucket.manuals_bucket.name
+    }
+    retry_policy = "RETRY_POLICY_RETRY"
+  }
+
+  depends_on = [
+    google_project_iam_member.discoveryengine_editor,
+    google_project_iam_member.storage_viewer,
+    google_project_iam_member.eventarc_receiver
+  ]
+}
+

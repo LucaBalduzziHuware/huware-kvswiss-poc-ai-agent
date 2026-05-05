@@ -9,13 +9,18 @@ Tutti i cambiamenti significativi a questo progetto saranno documentati in quest
 - **Multimodal Support**: Aggiornate le istruzioni di sistema per supportare l'analisi di immagini e il confronto con i diagrammi dei manuali tecnici.
 - **Improved Grounding**: Rafforzate le istruzioni per il `docs_agent` per garantire citazioni esplicite (documento e pagina) e risposte basate esclusivamente sui documenti recuperati.
 - **New Evaluation Cases**: Creato un set di valutazione specifico per Karlville Swiss (`basic.evalset.json`) che include test per errori ADS, lista macchine e saluti.
+- **Automated Datastore Refresh**: Implementata una pipeline Eventarc + Cloud Function (2nd Gen) per triggerare la sincronizzazione incrementale dei manuali PDF in Vertex AI Search non appena caricati su GCS.
+- **Dedicated Sync Identity**: Creato un Service Account dedicato (`kv-swiss-sync-sa`) con privilegi minimi (`discoveryengine.editor`, `storage.objectViewer`, `run.invoker`) per gestire l'automazione in sicurezza.
 
 ### Fixed
 - **Evaluation Config**: Risolto l'errore `404 NOT_FOUND` durante l'eval sostituendo il judge model `gemini-flash-latest` (non disponibile) con `gemini-2.5-pro` in `tests/eval/eval_config.json`.
 - **Tool Formatting**: Migliorata la formattazione degli output dei tool `list_monitored_machines` e `query_production_data` per una migliore leggibilità.
+- **GCS Sync Error**: Risolto l'errore `INVALID_FORMAT` nell'API ImportDocuments configurando correttamente `data_schema="content"` e supportando file PDF binari direttamente nel codice della Cloud Function.
+- **IAM Permission Gap**: Aggiunto il ruolo `roles/pubsub.publisher` al Service Agent di Cloud Storage per permettere a Eventarc di ricevere correttamente gli eventi dal bucket.
 
 ### Verified
 - Eseguita con successo la valutazione completa tramite `agents-cli eval run` (3/3 test superati).
+- Verificato il funzionamento end-to-end dell'automazione caricando `cx5100_en.pdf` e `cp29xx_en.pdf` su GCS e confermando l'avvio delle operazioni di importazione dai log.
 
 ## [0.1.0] - 2026-04-30
 

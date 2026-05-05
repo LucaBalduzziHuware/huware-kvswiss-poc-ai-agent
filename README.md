@@ -83,10 +83,13 @@ Per testare l'agente interattivamente nel Playground:
 - **Multimodalità**: L'agente accetta immagini (foto di componenti) per confronti tecnici.
 - **Grounding**: Risposte verificate con citazioni obbligatorie ai documenti sorgente.
 - **ADS Mapping**: Traduzione automatica dei codici esadecimali Beckhoff in descrizioni leggibili.
+- **Sync Automatico**: Pipeline GCS -> Eventarc -> Cloud Function per aggiornare il Datastore in tempo reale senza intervento manuale.
 
 ## 6. Configurazione Sicurezza
 
-L'agente utilizza un **Service Account dedicato** (`kv-swiss-agent-sa`) gestito via Terraform.
-1. Terraform genera una chiave JSON in `maintenance-agent/sa-key.json`.
-2. Il file `.env` punta a questa chiave per il supporto locale.
-3. In produzione, viene utilizzata l'identità dell'ambiente GCP.
+Il progetto utilizza due Service Account distinti per massimizzare la sicurezza:
+1. **`kv-swiss-agent-sa`**: Utilizzato dall'Agente AI. Ha permessi di **sola lettura** sui manuali e di query su BigQuery.
+2. **`kv-swiss-sync-sa`**: Utilizzato dall'automazione Cloud Function. Ha permessi di **scrittura** sul Datastore Vertex AI per gestire l'importazione dei file.
+
+Entrambi sono gestiti via Terraform in `terraform/iam.tf`.
+produzione, viene utilizzata l'identità dell'ambiente GCP.

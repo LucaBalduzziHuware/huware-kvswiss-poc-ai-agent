@@ -62,6 +62,11 @@ override.tf
 override.tf.json
 *_override.tf
 *_override.tf.json
+.terraform.lock.hcl
+
+# Build Artifacts
+*.zip
+terraform/*.zip
 
 # Gemini CLI
 .gemini/
@@ -70,6 +75,14 @@ override.tf.json
 *.json
 !package.json
 !package-lock.json
+sa-key.json
+maintenance-agent/sa-key.json
+
+# Agent Data (ADK Local State)
+.adk/
+maintenance-agent/.adk/
+maintenance-agent/app/.adk/
+.persist_vector_store
 
 # Log files
 *.log
