@@ -15,17 +15,19 @@ Questo agente è progettato per supportare i tecnici Karlville Swiss nella manut
 
 ## Workflow di Sviluppo
 
-### 1. Requisiti
-- Installare [uv](https://docs.astral.sh/uv/)
-- Installare `google-agents-cli`: `uv tool install google-agents-cli`
+### 1. Requisiti e Installazione
+- **uv**: Il gestore dipendenze ufficiale è [uv](https://docs.astral.sh/uv/). 
+  - Se l'installazione tramite script fallisce, puoi usare **pip**: `pip install uv`.
+- **google-agents-cli**: Necessario per il playground. `uv tool install google-agents-cli`.
 
 ### 2. Setup Locale
-1. Esegui `agents-cli install`.
-2. Assicurati che `sa-key.json` sia presente nella cartella root dell'agente.
-3. Configura il file `.env` con le variabili corrette.
+1. Spostati nella cartella dell'agente: `cd maintenance-agent`.
+2. Sincronizza l'ambiente: `uv sync`. Questo creerà un virtual environment locale in `maintenance-agent/.venv`.
+3. (Solo la prima volta) Esegui `agents-cli install`.
+4. Assicurati che `sa-key.json` e il file `.env` siano presenti nella cartella `maintenance-agent/`.
 
 ### 3. Sperimentazione (Playground)
-Usa il playground per testare le modifiche in tempo reale:
+Usa il playground per testare le modifiche (VS Code e altri IDE rileveranno automaticamente l'ambiente `.venv`):
 ```bash
 agents-cli playground
 ```

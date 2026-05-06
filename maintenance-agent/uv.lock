@@ -11,6 +11,22 @@ resolution-markers = [
 ]
 
 [[package]]
+name = "a2a-sdk"
+version = "0.3.26"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "google-api-core" },
+    { name = "httpx" },
+    { name = "httpx-sse" },
+    { name = "protobuf" },
+    { name = "pydantic" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/be/97/a6840e01795b182ce751ca165430d46459927cde9bfab838087cbb24aef7/a2a_sdk-0.3.26.tar.gz", hash = "sha256:44068e2d037afbb07ab899267439e9bc7eaa7ac2af94f1e8b239933c993ad52d", size = 274598, upload-time = "2026-04-09T15:21:13.902Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/dd/d5/51f4ee1bf3b736add42a542d3c8a3fd3fa85f3d36c17972127defc46c26f/a2a_sdk-0.3.26-py3-none-any.whl", hash = "sha256:754e0573f6d33b225c1d8d51f640efa69cbbed7bdfb06ce9c3540ea9f58d4a91", size = 151016, upload-time = "2026-04-09T15:21:12.35Z" },
+]
+
+[[package]]
 name = "absl-py"
 version = "2.4.0"
 source = { registry = "https://pypi.org/simple" }
@@ -164,6 +180,19 @@ wheels = [
 ]
 
 [[package]]
+name = "arrow"
+version = "1.4.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "python-dateutil" },
+    { name = "tzdata" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/b9/33/032cdc44182491aa708d06a68b62434140d8c50820a087fac7af37703357/arrow-1.4.0.tar.gz", hash = "sha256:ed0cc050e98001b8779e84d461b0098c4ac597e88704a655582b21d116e526d7", size = 152931, upload-time = "2025-10-18T17:46:46.761Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/ed/c9/d7977eaacb9df673210491da99e6a247e93df98c715fc43fd136ce1d3d33/arrow-1.4.0-py3-none-any.whl", hash = "sha256:749f0769958ebdc79c173ff0b0670d59051a535fa26e8eba02953dc19eb43205", size = 68797, upload-time = "2025-10-18T17:46:45.663Z" },
+]
+
+[[package]]
 name = "attrs"
 version = "26.1.0"
 source = { registry = "https://pypi.org/simple" }
@@ -183,6 +212,24 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/d9/82/4d0603f30c1b4629b1f091bb266b0d7986434891d6940a8c87f8098db24e/authlib-1.7.0.tar.gz", hash = "sha256:b3e326c9aa9cc3ea95fe7d89fd880722d3608da4d00e8a27e061e64b48d801d5", size = 175890, upload-time = "2026-04-18T11:00:28.559Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/ca/48/c954218b2a250e23f178f10167c4173fecb5a75d2c206f0a67ba58006c26/authlib-1.7.0-py2.py3-none-any.whl", hash = "sha256:e36817afb02f6f0b6bf55f150782499ddd6ddf44b402bb055d3263cc65ac9ae0", size = 258779, upload-time = "2026-04-18T11:00:26.64Z" },
+]
+
+[[package]]
+name = "backoff"
+version = "2.2.1"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/47/d7/5bbeb12c44d7c4f2fb5b56abce497eb5ed9f34d85701de869acedd602619/backoff-2.2.1.tar.gz", hash = "sha256:03f829f5bb1923180821643f8753b0502c3b682293992485b0eef2807afa5cba", size = 17001, upload-time = "2022-10-05T19:19:32.061Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/df/73/b6e24bd22e6720ca8ee9a85a0c4a2971af8497d8f3193fa05390cbd46e09/backoff-2.2.1-py3-none-any.whl", hash = "sha256:63579f9a0628e06278f7e47b7d7d5b6ce20dc65c5e96a6f3ca99a6adca0396e8", size = 15148, upload-time = "2022-10-05T19:19:30.546Z" },
+]
+
+[[package]]
+name = "binaryornot"
+version = "0.6.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/86/72/4755b85101f37707c71526a301c1203e413c715a0016ecb592de3d2dcfff/binaryornot-0.6.0.tar.gz", hash = "sha256:cc8d57cfa71d74ff8c28a7726734d53a851d02fad9e3a5581fb807f989f702f0", size = 478718, upload-time = "2026-03-08T16:26:28.804Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/cd/0c/31cfaa6b56fe23488ecb993bc9fc526c0d84d89607decdf2a10776426c2e/binaryornot-0.6.0-py3-none-any.whl", hash = "sha256:900adfd5e1b821255ba7e63139b0396b14c88b9286e74e03b6f51e0200331337", size = 14185, upload-time = "2026-03-08T16:26:27.466Z" },
 ]
 
 [[package]]
@@ -336,6 +383,25 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/d8/53/6f443c9a4a8358a93a6792e2acffb9d9d5cb0a5cfd8802644b7b1c9a02e4/colorama-0.4.6.tar.gz", hash = "sha256:08695f5cb7ed6e0531a20572697297273c47b8cae5a63ffc6d6ed5c201be6e44", size = 27697, upload-time = "2022-10-25T02:36:22.414Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/d1/d6/3965ed04c63042e047cb6a3e6ed1a63a35087b6a609aa3a15ed8ac56c221/colorama-0.4.6-py2.py3-none-any.whl", hash = "sha256:4f1d9991f5acc0ca119f9d443620b77f9d6b33703e51011c16baf57afb285fc6", size = 25335, upload-time = "2022-10-25T02:36:20.889Z" },
+]
+
+[[package]]
+name = "cookiecutter"
+version = "2.7.1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "arrow" },
+    { name = "binaryornot" },
+    { name = "click" },
+    { name = "jinja2" },
+    { name = "python-slugify" },
+    { name = "pyyaml" },
+    { name = "requests" },
+    { name = "rich" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/92/03/f4c96d8fd4f5e8af0210bf896eb63927f35d3014a8e8f3bf9d2c43ad3332/cookiecutter-2.7.1.tar.gz", hash = "sha256:ca7bb7bc8c6ff441fbf53921b5537668000e38d56e28d763a1b73975c66c6138", size = 142854, upload-time = "2026-03-04T04:06:02.786Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/14/a9/8c855c14b401dc67d20739345295af5afce5e930a69600ab20f6cfa50b5c/cookiecutter-2.7.1-py3-none-any.whl", hash = "sha256:cee50defc1eaa7ad0071ee9b9893b746c1b3201b66bf4d3686d0f127c8ed6cf9", size = 41317, upload-time = "2026-03-04T04:06:01.221Z" },
 ]
 
 [[package]]
@@ -665,6 +731,27 @@ eval = [
     { name = "pandas" },
     { name = "rouge-score" },
     { name = "tabulate" },
+]
+
+[[package]]
+name = "google-agents-cli"
+version = "0.1.2"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "a2a-sdk" },
+    { name = "backoff" },
+    { name = "click" },
+    { name = "cookiecutter" },
+    { name = "google-auth", extra = ["pyopenssl"] },
+    { name = "google-cloud-aiplatform" },
+    { name = "google-cloud-resource-manager" },
+    { name = "jinja2" },
+    { name = "pyyaml" },
+    { name = "requests" },
+    { name = "rich" },
+]
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/32/e3/4f02dbfb2567170218fd2d8aba567f723a2551d399a5204a521548518c7f/google_agents_cli-0.1.2-py3-none-any.whl", hash = "sha256:ce0035742b2b39abcf05577a74694288604786de970e2a6adcf12f92190e781b", size = 2928918, upload-time = "2026-04-29T21:15:59.78Z" },
 ]
 
 [[package]]
@@ -1607,6 +1694,7 @@ dependencies = [
     { name = "db-dtypes" },
     { name = "gcsfs" },
     { name = "google-adk" },
+    { name = "google-agents-cli" },
     { name = "google-cloud-aiplatform", extra = ["agent-engines", "evaluation"] },
     { name = "google-cloud-bigquery" },
     { name = "google-cloud-discoveryengine" },
@@ -1642,6 +1730,7 @@ requires-dist = [
     { name = "gcsfs", specifier = ">=2024.11.0" },
     { name = "google-adk", extras = ["bigquery"], specifier = ">=1.15.0,<2.0.0" },
     { name = "google-adk", extras = ["eval"], marker = "extra == 'eval'", specifier = ">=1.15.0,<2.0.0" },
+    { name = "google-agents-cli", specifier = ">=0.1.2" },
     { name = "google-cloud-aiplatform", extras = ["evaluation", "agent-engines"], specifier = ">=1.130.0" },
     { name = "google-cloud-bigquery", specifier = ">=3.41.0" },
     { name = "google-cloud-discoveryengine", specifier = ">=0.13.12" },
@@ -2652,6 +2741,18 @@ wheels = [
 ]
 
 [[package]]
+name = "python-slugify"
+version = "8.0.4"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "text-unidecode" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/87/c7/5e1547c44e31da50a460df93af11a535ace568ef89d7a811069ead340c4a/python-slugify-8.0.4.tar.gz", hash = "sha256:59202371d1d05b54a9e7720c5e038f928f45daaffe41dd10822f3907b937c856", size = 10921, upload-time = "2024-02-08T18:32:45.488Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/a4/62/02da182e544a51a5c3ccf4b03ab79df279f9c60c5e82d5e8bec7ca26ac11/python_slugify-8.0.4-py2.py3-none-any.whl", hash = "sha256:276540b79961052b66b7d116620b36518847f52d5fd9e3a70164fc8c50faa6b8", size = 10051, upload-time = "2024-02-08T18:32:43.911Z" },
+]
+
+[[package]]
 name = "pywin32"
 version = "311"
 source = { registry = "https://pypi.org/simple" }
@@ -3177,6 +3278,15 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/47/c6/ee486fd809e357697ee8a44d3d69222b344920433d3b6666ccd9b374630c/tenacity-9.1.4.tar.gz", hash = "sha256:adb31d4c263f2bd041081ab33b498309a57c77f9acf2db65aadf0898179cf93a", size = 49413, upload-time = "2026-02-07T10:45:33.841Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/d7/c1/eb8f9debc45d3b7918a32ab756658a0904732f75e555402972246b0b8e71/tenacity-9.1.4-py3-none-any.whl", hash = "sha256:6095a360c919085f28c6527de529e76a06ad89b23659fa881ae0649b867a9d55", size = 28926, upload-time = "2026-02-07T10:45:32.24Z" },
+]
+
+[[package]]
+name = "text-unidecode"
+version = "1.3"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/ab/e2/e9a00f0ccb71718418230718b3d900e71a5d16e701a3dae079a21e9cd8f8/text-unidecode-1.3.tar.gz", hash = "sha256:bad6603bb14d279193107714b288be206cac565dfa49aa5b105294dd5c4aab93", size = 76885, upload-time = "2019-08-30T21:36:45.405Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/a6/a5/c0b6468d3824fe3fde30dbb5e1f687b291608f9473681bbf7dabbf5a87d7/text_unidecode-1.3-py2.py3-none-any.whl", hash = "sha256:1311f10e8b895935241623731c2ba64f4c455287888b18189350b67134a822e8", size = 78154, upload-time = "2019-08-30T21:37:03.543Z" },
 ]
 
 [[package]]
