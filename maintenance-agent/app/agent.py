@@ -28,7 +28,8 @@ from google.genai import types
 from .tools import (
     list_monitored_machines,
     query_production_data,
-    maintenance_scheduler,
+    log_maintenance_event,
+    get_active_dashboard,
     get_system_user_info,
 )
 
@@ -88,25 +89,26 @@ Linee guida:
 # ---------------------------------------------------------
 data_agent = Agent(
     name="data_agent",
-    description="Analista dati e operatore di sistema. Usa questo agente per recuperare ID utente, interrogare la telemetria, ottenere la lista delle macchine o schedulare manutenzioni.",
+    description="Analista dati e operatore di sistema. Usa questo agente per interrogare la telemetria, gestire la dashboard o registrare eventi di manutenzione.",
     model=Gemini(
         model="gemini-2.5-pro",
         retry_options=types.HttpRetryOptions(attempts=3),
     ),
     instruction=f"""Sei l'analista dati e operatore tecnico di sistema per Karlville Swiss.
-Hai accesso al dataset BigQuery `{project_id}.beckhoff_data` (tabella `telemetry` con campi `timestamp`, `machineId`, `tag_path`, `tag_value`).
+Hai accesso al dataset BigQuery `{project_id}.beckhoff_data`.
 
 Linee guida per i tuoi tool:
-1. **Identità e Sistema**: Quando ti viene chiesta l'identità ("chi sono?", "qual è il mio ID utente?"), DEVI usare il tool `get_system_user_info`.
-2. **Macchine e Telemetria**: Usa `list_monitored_machines` o `query_production_data` per analizzare lo stato delle macchine. I dati di errore ADS restituiti dal tool includono già una descrizione testuale mappata.
-3. **Manutenzione**: Usa `maintenance_scheduler` per programmare interventi se rilevi anomalie gravi.
-4. **Analisi SQL**: Usa il BigQuery Toolset standard per calcoli statistici o query SQL dirette.
+1. **TEMPO E DATA**: Non cercare di indovinare MAI la data o l'ora corrente. Per ogni operazione che coinvolga scadenze, pianificazioni o consapevolezza temporale, DEVI prima usare `get_system_user_info` per ottenere l'ora esatta del server.
+2. **Dashboard**: Usa `get_active_dashboard` per avere una visione d'insieme degli allarmi e dei task pendenti.
+3. **Log Eventi**: Usa `log_maintenance_event` per registrare ogni cambio di stato. Classifica correttamente la categoria e la priorità.
+4. **Identità**: Usa `get_system_user_info` se l'utente chiede chi è o che ore sono.
 
 Riporta sempre fedelmente i dati tecnici e i risultati recuperati dai tuoi tool, senza inventare nulla.""",
     tools=[
         list_monitored_machines,
         query_production_data,
-        maintenance_scheduler,
+        log_maintenance_event,
+        get_active_dashboard,
         get_system_user_info,
         bq_toolset,
     ],
@@ -122,11 +124,14 @@ root_agent = Agent(
         retry_options=types.HttpRetryOptions(attempts=3),
     ),
     instruction="""Sei l'assistente tecnico e supervisore AI di Karlville Swiss. Il tuo compito è aiutare gli utenti a diagnosticare problemi e operare sui macchinari Beckhoff.
-Supporti input multimodali: puoi ricevere messaggi di testo e immagini (foto di componenti, screenshot di errori).
+
+REGOLE DI COMPORTAMENTO:
+1. **Briefing Iniziale (OBBLIGATORIO)**: All'inizio di ogni nuova sessione (quando l'utente ti saluta o inizia il turno), DEVI usare il tool `get_active_dashboard` tramite il `data_agent`. La tua primissima risposta deve includere un riassunto delle criticità (allarmi e task pendenti).
+2. **Supporto Multimodale**: Puoi ricevere immagini (foto di componenti) per confronti tecnici.
 
 Regole di DELEGA:
-1. DELEGA al `docs_agent` se l'utente chiede informazioni su manuali, guide, specifiche tecniche, come risolvere specifici codici di errore (es. Error 0x6) o se invia una FOTO per un confronto tecnico.
-2. DELEGA al `data_agent` se l'utente chiede dati in tempo reale, telemetria, lista delle macchine monitorate, informazioni sulla propria identità tecnica o per pianificare interventi.
+1. DELEGA al `docs_agent` per manuali, guide, specifiche tecniche o analisi di FOTO.
+2. DELEGA al `data_agent` per dati real-time, dashboard, lista macchine o per registrare eventi di manutenzione.
 
 Rispondi in modo professionale, cordiale e sintetico. Assicurati che le risposte finali includano le citazioni fornite dagli esperti.""",
     tools=[AgentTool(docs_agent), AgentTool(data_agent)],

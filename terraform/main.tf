@@ -3,7 +3,7 @@ data "google_bigquery_dataset" "telemetry_dataset" {
   dataset_id = var.dataset_id
 }
 
-# Tabella per i log di manutenzione e scadenze (da creare nel dataset esistente)
+# Tabella per i log di manutenzione e scadenze (Modello Event-Sourcing)
 resource "google_bigquery_table" "maintenance_log" {
   dataset_id = data.google_bigquery_dataset.telemetry_dataset.dataset_id
   table_id   = "maintenance_log"
@@ -12,10 +12,16 @@ resource "google_bigquery_table" "maintenance_log" {
   schema = <<EOF
 [
   {
+    "name": "event_timestamp",
+    "type": "TIMESTAMP",
+    "mode": "REQUIRED",
+    "description": "Timestamp dell'evento di manutenzione"
+  },
+  {
     "name": "task_id",
     "type": "STRING",
     "mode": "REQUIRED",
-    "description": "ID univoco del task di manutenzione"
+    "description": "ID univoco del task (raggruppa più eventi dello stesso intervento)"
   },
   {
     "name": "machine_id",
@@ -24,22 +30,46 @@ resource "google_bigquery_table" "maintenance_log" {
     "description": "ID del macchinario"
   },
   {
+    "name": "maintenance_category",
+    "type": "STRING",
+    "mode": "REQUIRED",
+    "description": "Categoria: ORDINARY, EXTRAORDINARY, BREAKDOWN, OBSERVATION"
+  },
+  {
+    "name": "event_type",
+    "type": "STRING",
+    "mode": "REQUIRED",
+    "description": "Tipo evento: SCHEDULED, STARTED, ESCALATED, COMPLETED, CANCELLED"
+  },
+  {
+    "name": "priority",
+    "type": "STRING",
+    "mode": "REQUIRED",
+    "description": "Priorità: LOW, MEDIUM, HIGH, CRITICAL"
+  },
+  {
     "name": "description",
     "type": "STRING",
     "mode": "NULLABLE",
-    "description": "Descrizione dell'intervento"
+    "description": "Descrizione dell'attività o del guasto"
+  },
+  {
+    "name": "trigger_reference",
+    "type": "STRING",
+    "mode": "NULLABLE",
+    "description": "Riferimento all'allarme o errore ADS (es. Error 1808)"
   },
   {
     "name": "due_date",
     "type": "TIMESTAMP",
-    "mode": "REQUIRED",
-    "description": "Data di scadenza del task"
+    "mode": "NULLABLE",
+    "description": "Scadenza prevista (se applicabile)"
   },
   {
-    "name": "status",
+    "name": "technician_id",
     "type": "STRING",
     "mode": "NULLABLE",
-    "description": "Stato (PENDING, COMPLETED, OVERDUE)"
+    "description": "ID del tecnico che ha registrato l'evento"
   }
 ]
 EOF
