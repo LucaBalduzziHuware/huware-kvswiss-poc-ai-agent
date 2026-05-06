@@ -5,7 +5,7 @@ Questo progetto implementa un assistente intelligente basato su agenti per la ma
 ## 1. Architettura del Sistema
 
 L'agente utilizza l'**Agent Development Kit (ADK)** di Google per orchestrare un sistema a nodi (Supervisor/Expert):
-- **maintenance_agent (Root)**: Agisce come supervisore e router delle richieste.
+- **maintenance_agent (Root)**: Agisce come supervisore e router delle richieste (basato su `gemini-3.1-pro-preview`).
 - **docs_agent (Expert)**: Specializzato in RAG documentale e analisi immagini tecniche.
 - **data_agent (Expert)**: Specializzato in telemetria BigQuery e operazioni di sistema.
 
@@ -31,7 +31,12 @@ graph TD
 .
 ├── maintenance-agent/  # Codice sorgente dell'AI Agent (ADK)
 │   ├── app/            # Logica dell'agente e dei tool
+│   │   ├── config.py   # Configurazione centralizzata e Logging
+│   │   ├── agents/     # Moduli dei singoli agenti (docs, data)
+│   │   ├── prompts/    # System Instructions in formato Markdown
+│   │   ├── tools/      # Tool modularizzati (telemetry, maintenance, system)
 │   │   ├── app_utils/  # Utility (ADS Error mapping, Telemetria)
+│   │   └── agent.py    # Aggregatore Root Agent
 │   ├── evals/          # Set di valutazione (.jsonl)
 │   └── tests/          # Test unitari e integrazione
 ├── terraform/          # Infrastruttura Google Cloud (IAC)

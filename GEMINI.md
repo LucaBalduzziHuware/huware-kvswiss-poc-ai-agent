@@ -68,6 +68,8 @@ Usa i seguenti prompt per generare il codice specifico:
 * **Refresh Automatico:** [IMPLEMENTATO] Pipeline Eventarc + Cloud Function per refresh incrementale del Datastore su upload GCS (Advanced Layout Parser attivo).
 * **Logbook Proattivo:** [IMPLEMENTATO] Briefing iniziale obbligatorio e gestione eventi complessi (Observations, Escalations).
 * **Modello 3.1:** [IMPLEMENTATO] Upgrade a Gemini 3.1 Pro su endpoint globale.
+* **Refactoring Enterprise:** [IMPLEMENTATO] Architettura modulare con separazione degli agenti, tool e prompt esternalizzati in file Markdown.
+* **Clean Instances:** [IMPLEMENTATO] Dichiarazione diretta degli oggetti Agente per una struttura più pulita e intuitiva.
 
 ---
 
@@ -101,9 +103,11 @@ Il progetto deve essere gestito seguendo il framework ufficiale Google per l'Age
 1. **Scaffolding:** Utilizzare `uvx google-agents-cli setup` per configurare l'ambiente.
 2. **Creazione Progetto:** Inizializzare l'agente con `agents-cli create maintenance-agent --template=langgraph`.
 3. **Organizzazione Cartelle:**
-    - `/tools`: Implementazione dei connettori BigQuery e Vertex AI Search.
+    - `/agents`: Definizione granulare dei singoli agenti esperti (Supervisor/Expert).
+    - `/prompts`: Gestione delle System Instructions in formato Markdown per una facile manutenzione.
+    - `/tools`: Implementazione modulare dei connettori BigQuery e Vertex AI Search.
     - `/evals`: Set di test (input: "Codice errore 0x6", output atteso: "Verifica connessione ADS").
-    - `/prompts`: Gestione delle System Instructions multimodali.
+    - `/app_utils`: Utility trasversali (ADS mapping, telemetria).
 
 ### Workflow di Sviluppo (Gemini CLI)
 - **Sperimentazione:** Utilizzare `agents-cli playground` per validare le risposte dell'agente prima del deploy.

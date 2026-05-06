@@ -10,6 +10,14 @@ Tutti i cambiamenti significativi a questo progetto saranno documentati in quest
 - **LLM Upgrade**: Eseguito l'upgrade di tutti gli agenti a **Gemini 3.1 Pro Preview** sull'endpoint Vertex AI `global`, migliorando le capacità di ragionamento e la velocità di risposta.
 - **Dynamic Time Awareness**: Il tool `get_system_user_info` ora fornisce la data e l'ora esatta del server, eliminando le allucinazioni temporali dell'agente e permettendo scadenze precise.
 
+### Changed
+- **Enterprise-Grade Refactoring**: Ristrutturata l'intera codebase Python in `app/` per migliorare scalabilità e manutenibilità:
+    - **Prompt as Code**: Estratte tutte le System Instructions in file Markdown dedicati all'interno di `app/prompts/`.
+    - **Agent Modularization**: Suddivisi gli esperti in moduli separati (`app/agents/docs_agent.py` e `app/agents/data_agent.py`).
+    - **Tool Modularization**: Smantellato il monolitico `tools.py` in domini specifici (`system.py`, `telemetry.py`, `maintenance.py`) dentro `app/tools/`.
+    - **Centralized Config & Logging**: Creato `app/config.py` per centralizzare le variabili d'ambiente e introdotto il modulo standard `logging` di Python al posto dei `print()`.
+    - **Clean Agent Instances**: Semplificata la dichiarazione degli agenti rimuovendo le factory functions e istanziando gli oggetti `Agent` direttamente a livello di modulo per una maggiore leggibilità e coerenza.
+
 ### Fixed
 - **SQL Data Type Mismatch**: Risolto un errore nella dashboard che causava il fallimento della query degli allarmi a causa di un confronto errato tra tipi FLOAT64 e STRING in BigQuery.
 - **Agent Hallucinations**: Corretta la logica per cui l'agente inventava mancanze di permessi di sistema quando non conosceva la data corrente.
