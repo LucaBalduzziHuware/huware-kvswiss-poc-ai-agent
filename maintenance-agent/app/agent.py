@@ -52,7 +52,7 @@ else:
 # Disabilitiamo il Pluggable Auth interattivo (popup) tramite variabili d'ambiente
 os.environ["ADK_FEATURE_PLUGGABLE_AUTH"] = "False"
 os.environ["GOOGLE_CLOUD_PROJECT"] = project_id
-os.environ["GOOGLE_CLOUD_LOCATION"] = "us-central1"
+os.environ["GOOGLE_CLOUD_LOCATION"] = "global"
 os.environ["GOOGLE_GENAI_USE_VERTEXAI"] = "True"
 
 # Inizializzazione BigQuery Toolset standard
@@ -70,7 +70,7 @@ docs_agent = Agent(
     name="docs_agent",
     description="Esperto di manualistica tecnica Beckhoff. Usa questo agente per cercare informazioni nei manuali PDF, trovare guide alla risoluzione degli errori, consultare documentazione tecnica o analizzare immagini di componenti.",
     model=Gemini(
-        model="gemini-2.5-pro",
+        model="gemini-3.1-pro-preview",
         retry_options=types.HttpRetryOptions(attempts=3),
     ),
     instruction="""Sei un esperto di manualistica tecnica per i macchinari Beckhoff di Karlville Swiss.
@@ -91,7 +91,7 @@ data_agent = Agent(
     name="data_agent",
     description="Analista dati e operatore di sistema. Usa questo agente per interrogare la telemetria, gestire la dashboard o registrare eventi di manutenzione.",
     model=Gemini(
-        model="gemini-2.5-pro",
+        model="gemini-3.1-pro-preview",
         retry_options=types.HttpRetryOptions(attempts=3),
     ),
     instruction=f"""Sei l'analista dati e operatore tecnico di sistema per Karlville Swiss.
@@ -120,7 +120,7 @@ Riporta sempre fedelmente i dati tecnici e i risultati recuperati dai tuoi tool,
 root_agent = Agent(
     name="maintenance_agent",
     model=Gemini(
-        model="gemini-2.5-pro",
+        model="gemini-3.1-pro-preview",
         retry_options=types.HttpRetryOptions(attempts=3),
     ),
     instruction="""Sei l'assistente tecnico e supervisore AI di Karlville Swiss. Il tuo compito è aiutare gli utenti a diagnosticare problemi e operare sui macchinari Beckhoff.

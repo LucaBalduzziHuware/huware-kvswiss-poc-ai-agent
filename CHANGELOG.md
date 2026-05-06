@@ -2,6 +2,22 @@
 
 Tutti i cambiamenti significativi a questo progetto saranno documentati in questo file.
 
+## [Unreleased] - 2026-05-06
+
+### Added
+- **Proactive Digital Logbook**: Implementato un sistema di diario di bordo basato su Event-Sourcing in BigQuery. L'agente ora gestisce cicli di vita complessi degli interventi (Ordinary, Extraordinary, Breakdown, Observation).
+- **Proactive Briefing**: Il `root_agent` esegue ora un briefing obbligatorio all'inizio di ogni sessione, riassumendo allarmi real-time e task pendenti tramite il nuovo tool `get_active_dashboard`.
+- **LLM Upgrade**: Eseguito l'upgrade di tutti gli agenti a **Gemini 3.1 Pro Preview** sull'endpoint Vertex AI `global`, migliorando le capacità di ragionamento e la velocità di risposta.
+- **Dynamic Time Awareness**: Il tool `get_system_user_info` ora fornisce la data e l'ora esatta del server, eliminando le allucinazioni temporali dell'agente e permettendo scadenze precise.
+
+### Fixed
+- **SQL Data Type Mismatch**: Risolto un errore nella dashboard che causava il fallimento della query degli allarmi a causa di un confronto errato tra tipi FLOAT64 e STRING in BigQuery.
+- **Agent Hallucinations**: Corretta la logica per cui l'agente inventava mancanze di permessi di sistema quando non conosceva la data corrente.
+
+### Verified
+- Eseguita valutazione completa con Gemini 3.1 Pro (3/3 test passati).
+- Verificato il flusso di briefing proattivo nel playground.
+
 ## [Unreleased] - 2026-05-05
 
 ### Added

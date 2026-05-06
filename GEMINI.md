@@ -5,14 +5,14 @@ Questo documento funge da specifica tecnica e blueprint per la generazione di co
 ---
 
 ## 1. Architettura di Riferimento
-L'architettura si basa sull'integrazione di dati industriali real-time provenienti da PLC Beckhoff (via ADS) e la potenza di ragionamento di Gemini 1.5 Pro.
+L'architettura si basa sull'integrazione di dati industriali real-time provenienti da PLC Beckhoff (via ADS) e la potenza di ragionamento di Gemini 3.1 Pro.
 
 ### Stack Tecnologico
 * **Ingestione:** Python + `pyads` (già implementato nella POC precedente).
-* **Data Warehouse:** Google BigQuery (Storage dei dati di telemetria).
-* **Orchestrazione Agentica:** ADK (Agent Development Kit) con architettura a nodi.
-* **Autenticazione:** Service Account dedicato (gestito via Terraform) per tutte le interazioni con GCP, con configurazione del Service Account Key locale per lo sviluppo.
-* **Modello:** Gemini 2.5 Pro (us-central1) per analisi avanzata e tool use.
+* **Data Warehouse:** Google BigQuery (Storage dei dati di telemetria e Diario di Bordo).
+* **Orchestrazione Agentica:** ADK (Agent Development Kit) con architettura a nodi (Supervisor/Expert).
+* **Autenticazione:** Service Account dedicati (gestiti via Terraform) per Agente e Sincronizzazione.
+* **Modello:** Gemini 3.1 Pro Preview (Vertex AI global) per analisi avanzata e tool use.
 * **Vector DB:** Vertex AI Search v2 (Layout Document Parser abilitato).
 
 ---
@@ -20,16 +20,16 @@ L'architettura si basa sull'integrazione di dati industriali real-time provenien
 ## 2. Definizione dei Tool e Analisi Dati
 L'agente non è limitato a query statiche ma combina tool operativi e analitici ufficiali.
 
-1.  **Operazioni Standard**: Tool ottimizzati per telemetria (`query_production_data`), lista macchine (`list_monitored_machines`) e manutenzione (`maintenance_scheduler`).
+1.  **Operazioni Standard**: Tool ottimizzati per telemetria (`query_production_data`), cruscotto proattivo (`get_active_dashboard`), lista macchine (`list_monitored_machines`) e gestione eventi di manutenzione (`log_maintenance_event`).
 2.  **Analisi Dinamica**: Integrazione con il `BigQueryToolset` ufficiale di ADK per esecuzione di SQL libero (`execute_sql`) e scoperta dello schema (`get_table_info`). Questi tool operano silenziosamente tramite Service Account, senza richiedere autenticazione interattiva.
-3.  **Recupero Identità Utente**: Il tool `who_am_i` dimostra l'uso di `ToolContext` per accedere all'`user_id` e `session_id` dell'interazione, abilitando logiche utente-specifiche.
+3.  **Tempo e Identità**: Il tool `get_system_user_info` dimostra l'uso di `ToolContext` per accedere all'`user_id`, `session_id` e alla **data/ora esatta del server** per garantire consapevolezza temporale ed evitare allucinazioni sulle scadenze.
 4.  **RAG Avanzato**: Ricerca documentale tramite `VertexAiSearchTool` (tool ufficiale ADK) su documenti processati con Layout Parser.
 
 ---
 
 ## 3. Tool Definition (Function Calling)
 
-Per permettere a Gemini di interagire con l'ambiente, devono essere generati i seguenti tool:
+Per permettere a Gemini di interagire con l'ambiente, sono stati implementati i seguenti tool:
 
 ### Tool: `query_production_data`
 * **Input:** Query SQL generata dall'LLM o parametri (Machine ID, Time Range).
@@ -37,11 +37,14 @@ Per permettere a Gemini di interagire con l'ambiente, devono essere generati i s
 
 ### Tool: `search_manuals`
 * **Input:** Stringa di ricerca (es. "Errore ADS 0x6").
-* **Logica:** Esegue una ricerca semantica sui PDF dei macchinari Beckhoff e restituisce i paragrafi rilevanti.
+* **Logica:** Esegue una ricerca semantica sui PDF dei macchinari Beckhoff e restituisce i paragrafi rilevanti (Grounding).
 
-### Tool: `maintenance_scheduler`
-* **Input:** Data di scadenza, Task ID.
-* **Logica:** Scrive su una tabella di "Maintenance Log" per tracciare le scadenze e attivare reminder tramite Cloud Pub/Sub.
+### Tool: `log_maintenance_event` (Evoluzione di `maintenance_scheduler`)
+* **Input:** Machine ID, Categoria (ORDINARY, BREAKDOWN, etc), Event Type (SCHEDULED, COMPLETED, etc), Priorità, Descrizione.
+* **Logica:** Scrive su BigQuery utilizzando un modello **Event-Sourcing (append-only)** per tracciare lo storico immutabile degli interventi e attivare reminder.
+
+### Tool: `get_active_dashboard`
+* **Logica:** Query asincrona che combina allarmi ADS dell'ultima ora e lo stato corrente dei task aperti tramite Window Functions SQL, fornendo un briefing proattivo al tecnico.
 
 ---
 
@@ -58,16 +61,18 @@ Usa i seguenti prompt per generare il codice specifico:
 ---
 
 ## 5. Stato dell'Implementazione
-* **Grounding:** [IMPLEMENTATO] Il modello cita sempre la fonte e la pagina del manuale.
-* **Analisi Immagini:** [IMPLEMENTATO] Istruzioni di sistema configurate per l'analisi di foto di componenti.
-* **Gestione Errori ADS:** [IMPLEMENTATO] Utility `ads_errors.py` mappa i codici esadecimali in descrizioni leggibili.
+* **Grounding:** [IMPLEMENTATO] Il modello cita sempre la fonte e la pagina del manuale (es. "Secondo il manuale a pag. 12...").
+* **Analisi Immagini:** [IMPLEMENTATO] Configurato per accettare `Part` di tipo `Image` e confrontarle con diagrammi tecnici per identificare bruciature o disallineamenti.
+* **Gestione Errori ADS:** [IMPLEMENTATO] Utility `ads_errors.py` mappa i codici esadecimali Beckhoff (es. 1808) in descrizioni testuali leggibili.
 * **Orchestrazione:** [IMPLEMENTATO] Pattern Supervisor/Expert con ADK.
-* **Refresh Automatico:** [IMPLEMENTATO] Pipeline Eventarc + Cloud Function per refresh incrementale del Datastore su upload GCS.
+* **Refresh Automatico:** [IMPLEMENTATO] Pipeline Eventarc + Cloud Function per refresh incrementale del Datastore su upload GCS (Advanced Layout Parser attivo).
+* **Logbook Proattivo:** [IMPLEMENTATO] Briefing iniziale obbligatorio e gestione eventi complessi (Observations, Escalations).
+* **Modello 3.1:** [IMPLEMENTATO] Upgrade a Gemini 3.1 Pro su endpoint globale.
 
 ---
 
 ## 6. Esempio di Prompt di Sistema (System Instruction)
-`Sei l'assistente tecnico di Karlville Swiss. Il tuo compito è minimizzare il downtime dei macchinari Beckhoff. Analizza i dati ADS in arrivo e confrontali con la documentazione ufficiale. Se rilevi un'anomalia, guida il tecnico passo-passo. Se ricevi una foto, analizza componenti elettrici o meccanici alla ricerca di bruciature o disallineamenti. Cita sempre la fonte e la pagina dei manuali.`
+`Sei l'assistente tecnico di Karlville Swiss. Il tuo compito è minimizzare il downtime dei macchinari Beckhoff. Analizza i dati ADS in arrivo e confrontali con la documentazione ufficiale. Se rilevi un'anomalia, guida il tecnico passo-passo. Se ricevi una foto, analizza componenti elettrici o meccanici alla ricerca di bruciature o disallineamenti. Cita sempre la fonte e la pagina dei manuali. Esegui sempre un briefing iniziale usando il dashboard operativo.`
 
 ---
 
@@ -77,10 +82,11 @@ Ad ogni interazione, generazione di codice o modifica dell'architettura, Gemini 
 
 ### CHANGELOG.md
 * **Contenuto:** Registro cronologico di tutte le modifiche.
-* **Dettagli richiesti:** Data, descrizione del cambiamento, motivazione tecnica e, soprattutto, **cambi di strategia**.
+* **Vincolo:** NON rimuovere mai le voci precedenti; deve fungere da diario di sviluppo completo del progetto.
 
-### README.md
-* **Contenuto:** Documentazione tecnica esaustiva del progetto.
+### README.md e GEMINI.md
+* **Contenuto:** Documentazione tecnica ed evoluzione del blueprint.
+* **Vincolo:** Evitare di tagliare informazioni storiche o blueprint tecnici precedenti. Aggiungere le nuove implementazioni preservando il contesto originale, rimuovendo solo parti diventate tecnicamente errate.
 
 ### Diagrammi e Visualizzazione
 * Per ogni spiegazione architettonica, flusso logico o schema di database, Gemini deve generare dei diagrammi utilizzando la sintassi **Mermaid.js**. 
@@ -91,10 +97,24 @@ Ad ogni interazione, generazione di codice o modifica dell'architettura, Gemini 
 
 Il progetto deve essere gestito seguendo il framework ufficiale Google per l'Agent Development Lifecycle (ADLC).
 
+### Inizializzazione e Struttura
+1. **Scaffolding:** Utilizzare `uvx google-agents-cli setup` per configurare l'ambiente.
+2. **Creazione Progetto:** Inizializzare l'agente con `agents-cli create maintenance-agent --template=langgraph`.
+3. **Organizzazione Cartelle:**
+    - `/tools`: Implementazione dei connettori BigQuery e Vertex AI Search.
+    - `/evals`: Set di test (input: "Codice errore 0x6", output atteso: "Verifica connessione ADS").
+    - `/prompts`: Gestione delle System Instructions multimodali.
+
 ### Workflow di Sviluppo (Gemini CLI)
-- **Sperimentazione:** Utilizzare `agents-cli playground` per validare le risposte dell'agente.
-- **Valutazione:** Eseguire `agents-cli eval run` dopo ogni modifica sostanziale.
+- **Sperimentazione:** Utilizzare `agents-cli playground` per validare le risposte dell'agente prima del deploy.
+- **Valutazione:** Eseguire `agents-cli eval run` dopo ogni modifica sostanziale alla logica di LangGraph o ai prompt di sistema.
 - **Deployment:** Utilizzare `agents-cli deploy` per portare l'agente su Vertex AI Agent Engine.
+
+### Vincoli di Risposta per Gemini
+Quando viene richiesto di implementare una nuova funzionalità, Gemini deve:
+1. Fornirlo il codice Python compatibile con la struttura generata da `agents-cli`.
+2. Definire i test case corrispondenti nella cartella `/evals`.
+3. Documentare il comando CLI necessario per testare la specifica funzione.
 
 ---
 
@@ -106,3 +126,7 @@ Il progetto deve essere gestito seguendo il framework ufficiale Google per l'Age
 * **Workflow:**
     - `uv sync` per installare le dipendenze.
     - `uv run agents-cli playground` per avviare l'agente.
+
+### requirements.txt (Export Automatico)
+* Sebbene si utilizzi uv/pipenv, per compatibilità con alcuni servizi di Google Cloud (come Cloud Functions o build specifiche), Gemini deve **sempre sincronizzare** le dipendenze in un file `requirements.txt`.
+* **Vincolo:** Ogni volta che vengono apportate modifiche alle dipendenze, aggiornare `requirements.txt`.
