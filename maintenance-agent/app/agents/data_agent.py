@@ -8,7 +8,7 @@ from google.genai import types
 
 from ..config import PROJECT_ID
 from ..tools.telemetry import list_monitored_machines, query_production_data
-from ..tools.maintenance import log_maintenance_event, get_active_dashboard
+from ..tools.maintenance import get_active_dashboard
 from ..tools.system import get_system_user_info
 
 # Caricamento Prompt da file esterno
@@ -37,7 +37,6 @@ data_agent = Agent(
     tools=[
         list_monitored_machines,
         query_production_data,
-        log_maintenance_event,
         get_active_dashboard,
         get_system_user_info,
         bq_toolset,

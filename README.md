@@ -5,21 +5,26 @@ Questo progetto implementa un assistente intelligente basato su agenti per la ma
 ## 1. Architettura del Sistema
 
 L'agente utilizza l'**Agent Development Kit (ADK)** di Google per orchestrare un sistema a nodi (Supervisor/Expert):
-- **maintenance_agent (Root)**: Agisce come supervisore e router delle richieste (basato su `gemini-3.1-pro-preview`).
+- **maintenance_agent (Root)**: Agisce come supervisore e router proattivo (basato su `gemini-3.1-pro-preview`).
+- **diagnostic_agent (Expert)**: Specializzato in **Manutenzione Predittiva**. Incrocia la telemetria real-time con le specifiche dei manuali per rilevare anomalie.
 - **docs_agent (Expert)**: Specializzato in RAG documentale e analisi immagini tecniche.
-- **data_agent (Expert)**: Specializzato in telemetria BigQuery e operazioni di sistema.
+- **data_agent (Expert)**: Specializzato in telemetria BigQuery, dashboard e operazioni di sistema.
 
 L'infrastruttura include un'**automazione di sincronizzazione** basata su Eventarc:
 ```mermaid
 graph TD
     User((Utente)) --> Root[Root Agent]
+    Root -->|Diagnostica Predittiva| Diagnostic[Diagnostic Agent]
     Root -->|Delega Documenti/Immagini| Docs[Docs Agent]
     Root -->|Delega Telemetria/Sistema| Data[Data Agent]
-    
-    Docs -->|Vertex AI Search| Manuals[(Manuali PDF)]
+
+    Diagnostic -->|Vertex AI Search| Manuals[(Manuali/Soglie)]
+    Diagnostic -->|BigQuery| MaintLog[(Maintenance Log)]
+    Docs -->|Vertex AI Search| Manuals
     Data -->|BigQuery| Telemetry[(BigQuery Telemetry)]
-    Data -->|BigQuery| MaintLog[(Maintenance Log)]
-    
+    Data -->|BigQuery| MaintLog
+```
+
     Bucket[(GCS Bucket)] -- Upload PDF --> Eventarc(Eventarc Trigger)
     Eventarc --> CF[Cloud Function Sync]
     CF -->|Import Incremental| Manuals
@@ -94,11 +99,11 @@ Per testare l'agente interattivamente nel Playground:
 - **BigQuery Toolset:** Supporto per query SQL dirette e analisi dello schema dati.
 
 ## 5. Funzionalità Avanzate
+- **Diagnostica Proattiva**: All'avvio, il Supervisor analizza il dashboard e delega automaticamente i valori numerici al `diagnostic_agent` per il confronto con le soglie dei manuali.
 - **Modello Gemini 3.1 Pro**: Utilizzo dell'ultima versione del modello su endpoint `global` per ragionamenti superiori.
-- **Briefing di Turno**: L'agente accoglie il tecnico con un riassunto automatico dello stato del reparto.
-- **Multimodalità**: L'agente accetta immagini (foto di componenti) per confronti tecnici con i manuali.
-- **Grounding**: Risposte verificate con citazioni obbligatorie ai documenti sorgente.
-- **Sync Automatico**: Pipeline GCS -> Eventarc -> Cloud Function per aggiornare il Datastore in tempo reale senza intervento manuale.
+- **Tool Modularization**: Codice pulito e manutenibile con tool divisi per dominio (`maintenance`, `telemetry`, `system`).
+- **Grounding**: Risposte verificate con citazioni obbligatorie ai documenti sorgente (PDF e file di testo).
+- **Sync Automatico**: Pipeline GCS -> Eventarc -> Cloud Function (supporta PDF e TXT) per aggiornare il Datastore in tempo reale.
 
 ## 6. Configurazione Sicurezza
 

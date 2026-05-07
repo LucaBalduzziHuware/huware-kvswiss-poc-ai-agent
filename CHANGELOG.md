@@ -2,6 +2,24 @@
 
 Tutti i cambiamenti significativi a questo progetto saranno documentati in questo file.
 
+## [Unreleased] - 2026-05-07
+
+### Added
+- **Predictive Diagnostic Agent**: Introdotto un nuovo agente esperto (`diagnostic_agent`) dedicato all'analisi incrociata tra telemetria real-time e manuali tecnici per la manutenzione predittiva.
+- **Enhanced Telemetry Dashboard**: Il tool `get_active_dashboard` ora estrae automaticamente i valori numerici correnti (Temp, Pressure, Speed) per permettere l'analisi proattiva immediata all'avvio della sessione.
+
+### Changed
+- **Tool Clean-up & Modularization**: Rimosso definitivamente il file monolitico `app/tools.py` in favore della struttura modulare in `app/tools/`. Aggiornati tutti gli import nel progetto.
+- **Cloud Function Optimization**: Aggiornata la funzione `vertex-sync-on-upload` per supportare l'indicizzazione di file di testo piano (`.txt`), risolvendo i limiti di MIME-type di Vertex AI Search per i file Markdown.
+
+### Fixed
+- **VertexAiSearchTool TypeError**: Risolto un bug nell'inizializzazione del tool di ricerca che utilizzava parametri non supportati dall'SDK ADK (`data_store_path` -> `data_store_id`).
+- **Data Agent Instruction Cleanup**: Rimosso il tool di log dal `data_agent` per centralizzare la responsabilità della scrittura eventi nell'Agente Diagnostico.
+
+### Verified
+- Verificato il caricamento e l'indicizzazione di `outlier_value.txt` su Vertex AI Search.
+- Testato il flusso di delega proattiva Supervisor -> Diagnostic Agent nel playground.
+
 ## [Unreleased] - 2026-05-06
 
 ### Added

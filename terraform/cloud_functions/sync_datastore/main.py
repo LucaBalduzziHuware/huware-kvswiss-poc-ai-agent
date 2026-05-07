@@ -17,14 +17,15 @@ def trigger_vertex_sync(cloud_event):
     bucket = data["bucket"]
     name = data["name"]
     
-    # Ignora file che non sono PDF
-    if not name.lower().endswith(".pdf"):
-        print(f"File ignorato (non PDF): {name}")
+    # Ignora file che non sono PDF o Testo
+    allowed_extensions = (".pdf", ".txt")
+    if not name.lower().endswith(allowed_extensions):
+        print(f"File ignorato (estensione non supportata): {name}")
         return
 
     # Costruiamo l'URI del file appena caricato
     gcs_uri = f"gs://{bucket}/{name}"
-    print(f"Rilevato nuovo PDF: {gcs_uri}")
+    print(f"Rilevato nuovo documento ({name.split('.')[-1]}): {gcs_uri}")
 
     # Inizializziamo il client per Vertex AI Search (Discovery Engine)
     client = discoveryengine.DocumentServiceClient()

@@ -9,6 +9,7 @@ from google.genai import types
 from .config import get_logger
 from .agents.docs_agent import docs_agent
 from .agents.data_agent import data_agent
+from .agents.diagnostic_agent import diagnostic_agent
 
 logger = get_logger(__name__)
 
@@ -27,7 +28,11 @@ root_agent = Agent(
         retry_options=types.HttpRetryOptions(attempts=3),
     ),
     instruction=root_instruction,
-    tools=[AgentTool(docs_agent), AgentTool(data_agent)],
+    tools=[
+        AgentTool(docs_agent), 
+        AgentTool(data_agent),
+        AgentTool(diagnostic_agent)
+    ],
 )
 
 # Punto di ingresso per l'applicazione ADK

@@ -53,9 +53,10 @@ def log_maintenance_event(
         return f"Errore tecnico: {str(e)}"
 
 def get_active_dashboard() -> str:
-    """Restituisce il cruscotto operativo attuale: allarmi recenti e task di manutenzione aperti."""
+    """Restituisce il cruscotto operativo attuale: allarmi recenti, task aperti e telemetria chiave."""
     client = bigquery.Client(project=PROJECT_ID)
     
+    # 1. Query per Allarmi ADS e Errori
     alarms_query = f"""
         SELECT machineId, tag_path, tag_value, timestamp
         FROM `{PROJECT_ID}.{DATASET_ID}.telemetry`
@@ -63,9 +64,27 @@ def get_active_dashboard() -> str:
         AND CAST(tag_value AS STRING) NOT IN ('0', '0.0', 'None', '')
         AND timestamp >= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 1 HOUR)
         ORDER BY timestamp DESC
-        LIMIT 20
+        LIMIT 10
     """
     
+    # 2. Query per Telemetria Numerica (Analisi Predittiva)
+    # Prendiamo l'ultimo valore per ogni tag chiave nelle ultime 2 ore
+    telemetry_query = f"""
+        WITH LatestTelemetry AS (
+            SELECT 
+                machineId, 
+                tag_path, 
+                tag_value, 
+                timestamp,
+                ROW_NUMBER() OVER(PARTITION BY machineId, tag_path ORDER BY timestamp DESC) as rn
+            FROM `{PROJECT_ID}.{DATASET_ID}.telemetry`
+            WHERE (tag_path LIKE '%Temp%' OR tag_path LIKE '%Pressure%' OR tag_path LIKE '%Speed%' OR tag_path LIKE '%Load%')
+            AND timestamp >= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 2 HOUR)
+        )
+        SELECT * FROM LatestTelemetry WHERE rn = 1
+    """
+    
+    # 3. Query per Task di Manutenzione Aperti
     maintenance_query = f"""
         WITH LatestEvents AS (
             SELECT *,
@@ -82,9 +101,10 @@ def get_active_dashboard() -> str:
     """
     
     try:
-        logger.info("Generating operational dashboard.")
+        logger.info("Generating predictive operational dashboard.")
         dashboard = ["=== operativo dashboard ==="]
         
+        # Allarmi
         alarms_res = client.query(alarms_query).result()
         if alarms_res.total_rows > 0:
             dashboard.append("\n🚨 ALLARMI REAL-TIME (ULTIMA ORA):")
@@ -94,6 +114,14 @@ def get_active_dashboard() -> str:
         else:
             dashboard.append("\n✅ Nessun allarme critico rilevato nell'ultima ora.")
             
+        # Telemetria per Diagnostica
+        telemetry_res = client.query(telemetry_query).result()
+        if telemetry_res.total_rows > 0:
+            dashboard.append("\n📊 TELEMETRIA CORRENTE (CAMPIONAMENTO):")
+            for row in telemetry_res:
+                dashboard.append(f"- [{row.machineId}] {row.tag_path}: {row.tag_value}")
+        
+        # Task Manutenzione
         maint_res = client.query(maintenance_query).result()
         if maint_res.total_rows > 0:
             dashboard.append("\n🔧 TASK APERTI E OSSERVAZIONI:")

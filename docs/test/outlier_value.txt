@@ -1,0 +1,1 @@
+I valori di temperatura (MAIN.fTemp) non devono superare i 90.0° per un corretto funzionamento.
